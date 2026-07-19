@@ -8,6 +8,9 @@ export interface ToiletInfo {
   hasPassword: boolean;
   confidence?: Confidence;
   reportCount?: number;
+  /** 맞아요/틀려요 피드백 수 (캐시) */
+  correctCount?: number;
+  wrongCount?: number;
   /** Firestore Timestamp | millis | null */
   lastConfirmedAt?: unknown;
 }
@@ -15,6 +18,8 @@ export interface ToiletInfo {
 export interface Building {
   id: string;
   name: string;
+  /** 점포명 (핀 등록 시 입력) */
+  storeName?: string;
   address: string;
   lat: number;
   lng: number;
@@ -24,7 +29,10 @@ export interface Building {
   ownerVerified?: boolean;
   isPublicByOwner?: boolean;
   status: BuildingStatus;
+  /** 등록자 닉네임 스냅샷 */
+  createdByNickname?: string;
   /** Firestore Timestamp | millis | null */
+  createdAt?: unknown;
   updatedAt?: unknown;
 }
 

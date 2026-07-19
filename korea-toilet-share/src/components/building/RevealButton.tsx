@@ -15,6 +15,7 @@ import EtiquettePledgeModal from "@/components/common/EtiquettePledgeModal";
 import LoginSheet from "@/components/common/LoginSheet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
+import { getLocalSecret } from "@/lib/mock/localPins";
 import type { Gender } from "@/types/building";
 import FeedbackButtons from "./FeedbackButtons";
 
@@ -79,7 +80,7 @@ export default function RevealButton({ buildingId, gender }: Props) {
     setError(null);
     try {
       if (!configured) {
-        const demo = MOCK_SECRETS[buildingId]?.[gender];
+        const demo = MOCK_SECRETS[buildingId]?.[gender] ?? getLocalSecret(buildingId, gender);
         setRevealed({ password: demo ?? "1234*", viewLogId: null, demo: true });
         setConfirmOpen(false);
         return;

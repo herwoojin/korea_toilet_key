@@ -11,6 +11,7 @@ import {
 import { getDb, isFirebaseConfigured } from "@/lib/firebase/client";
 import { distanceM, radiusBounds } from "@/lib/geo";
 import { MOCK_BUILDINGS } from "@/lib/mock/buildings";
+import { LOCAL_PINS } from "@/lib/mock/localPins";
 import type { Building } from "@/types/building";
 
 /** 주변 빌딩 조회 — Firebase 미설정 시 데모 데이터 반환 */
@@ -20,7 +21,7 @@ export async function fetchNearbyBuildings(
   radiusMeters = 800
 ): Promise<Building[]> {
   if (!isFirebaseConfigured) {
-    return MOCK_BUILDINGS.filter(
+    return [...MOCK_BUILDINGS, ...LOCAL_PINS].filter(
       (b) => distanceM(lat, lng, b.lat, b.lng) <= Math.max(radiusMeters, 2000)
     );
   }
@@ -42,7 +43,11 @@ export async function fetchNearbyBuildings(
 
 export async function fetchBuilding(id: string): Promise<Building | null> {
   if (!isFirebaseConfigured) {
-    return MOCK_BUILDINGS.find((b) => b.id === id) ?? null;
+    return (
+      MOCK_BUILDINGS.find((b) => b.id === id) ??
+      LOCAL_PINS.find((b) => b.id === id) ??
+      null
+    );
   }
   const snap = await getDoc(doc(getDb(), "buildings", id));
   return snap.exists() ? ({ ...(snap.data() as Building), id: snap.id }) : null;

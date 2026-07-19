@@ -61,6 +61,12 @@ export async function recomputeConsensus(
   );
 
   const activeCount = reports.filter((r) => !r.revoked).length;
+  let correctCount = 0;
+  let wrongCount = 0;
+  for (const d of feedbacksSnap.docs) {
+    if (d.data().result === "correct") correctCount += 1;
+    else wrongCount += 1;
+  }
   await db.doc(`buildings/${buildingId}`).set(
     {
       toilets: {
@@ -69,6 +75,8 @@ export async function recomputeConsensus(
           hasPassword: result.current != null,
           confidence: result.confidence,
           reportCount: activeCount,
+          correctCount,
+          wrongCount,
         },
       },
       updatedAt: FieldValue.serverTimestamp(),

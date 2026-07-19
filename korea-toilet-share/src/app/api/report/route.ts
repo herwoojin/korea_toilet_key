@@ -18,17 +18,36 @@ export async function POST(req: Request) {
     const uid = await requireUid(req);
     const body = (await req.json()) as {
       buildingId?: string;
-      newBuilding?: { name: string; address: string; lat: number; lng: number };
+      newBuilding?: {
+        name: string;
+        storeName?: string;
+        address: string;
+        lat: number;
+        lng: number;
+      };
       gender?: "male" | "female";
       password?: string;
+      /** 지도 핀 등록 플로우 — 남/여 비번 동시 제보 */
+      passwords?: { male?: string; female?: string };
       locationDesc?: string;
       gpsLat?: number;
       gpsLng?: number;
     };
-    const { gender, password } = body;
-    if ((gender !== "male" && gender !== "female") || !password?.trim()) {
-      throw new ApiError(400, "BAD_REQUEST");
+
+    // 제보 엔트리 정규화: passwords(신규 핀 플로우) 또는 gender+password(기존 플로우)
+    const entries: { gender: "male" | "female"; password: string }[] = [];
+    if (body.passwords) {
+      if (body.passwords.male?.trim())
+        entries.push({ gender: "male", password: body.passwords.male.trim() });
+      if (body.passwords.female?.trim())
+        entries.push({ gender: "female", password: body.passwords.female.trim() });
+    } else if (
+      (body.gender === "male" || body.gender === "female") &&
+      body.password?.trim()
+    ) {
+      entries.push({ gender: body.gender, password: body.password.trim() });
     }
+    if (entries.length === 0) throw new ApiError(400, "BAD_REQUEST");
 
     const db = getAdminDb();
     const userSnap = await db.doc(`users/${uid}`).get();
@@ -62,18 +81,20 @@ export async function POST(req: Request) {
       } else {
         const ref = await db.collection("buildings").add({
           name: nb.name || nb.address,
+          storeName: nb.storeName?.trim() || null,
           address: nb.address,
           lat: nb.lat,
           lng: nb.lng,
           geohash: computeGeohash(nb.lat, nb.lng),
           toilets: {
-            male: { exists: gender === "male", hasPassword: false },
-            female: { exists: gender === "female", hasPassword: false },
+            male: { exists: entries.some((e) => e.gender === "male"), hasPassword: false },
+            female: { exists: entries.some((e) => e.gender === "female"), hasPassword: false },
           },
           ownerVerified: false,
           isPublicByOwner: false,
           status: "active",
           createdBy: uid,
+          createdByNickname: user.nickname ?? "user",
           createdAt: FieldValue.serverTimestamp(),
           updatedAt: FieldValue.serverTimestamp(),
         });
@@ -92,29 +113,37 @@ export async function POST(req: Request) {
       buildingLng != null &&
       distanceM(body.gpsLat, body.gpsLng, buildingLat, buildingLng) <= ONSITE_THRESHOLD_M;
 
-    // 제보 저장 (ERD §2.4, 불변 로그)
-    await db.collection("reports").add({
-      buildingId,
-      gender,
-      password: password.trim(),
-      reporterId: uid,
-      reporterVerified: Boolean(user.phoneVerified),
-      onsite,
-      reportedAt: FieldValue.serverTimestamp(),
-      revoked: false,
-    });
+    // 제보 저장 (ERD §2.4, 불변 로그) — 성별별 개별 report
+    for (const entry of entries) {
+      await db.collection("reports").add({
+        buildingId,
+        gender: entry.gender,
+        password: entry.password,
+        reporterId: uid,
+        reporterVerified: Boolean(user.phoneVerified),
+        onsite,
+        reportedAt: FieldValue.serverTimestamp(),
+        revoked: false,
+      });
+      if (body.locationDesc?.trim()) {
+        await db.doc(`buildings/${buildingId}`).set(
+          { toilets: { [entry.gender]: { locationDesc: body.locationDesc.trim() } } },
+          { merge: true }
+        );
+      }
+      await recomputeConsensus(db, buildingId, entry.gender);
+    }
 
-    if (body.locationDesc?.trim()) {
+    // 기존 빌딩에 점포명이 새로 제공되면 반영
+    if (body.newBuilding?.storeName?.trim()) {
       await db.doc(`buildings/${buildingId}`).set(
-        { toilets: { [gender]: { locationDesc: body.locationDesc.trim() } } },
+        { storeName: body.newBuilding.storeName.trim() },
         { merge: true }
       );
     }
 
-    await recomputeConsensus(db, buildingId, gender);
-
     await db.doc(`users/${uid}`).update({
-      points: FieldValue.increment(REPORT_POINTS),
+      points: FieldValue.increment(REPORT_POINTS * entries.length),
       lastActiveAt: FieldValue.serverTimestamp(),
     });
 
