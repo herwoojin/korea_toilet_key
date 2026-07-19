@@ -1,0 +1,158 @@
+{
+  "app": {
+    "name": "Korea Toilet Sharing Service",
+    "shortName": "Korea Toilet Sharing",
+    "description": "A trust-based sharing service to find restroom locations and door passcodes of Korean commercial buildings on a map",
+    "demoBanner": "Demo mode — set Firebase environment variables to see real data"
+  },
+  "common": {
+    "loading": "Loading…",
+    "notFound": "Not found",
+    "back": "Back",
+    "close": "Close"
+  },
+  "tabs": {
+    "map": "Map",
+    "live": "Live",
+    "report": "Report",
+    "my": "My"
+  },
+  "header": {
+    "login": "Sign in",
+    "logout": "Sign out",
+    "culture": "Toilet culture guide"
+  },
+  "map": {
+    "locate": "Go to my location",
+    "geoDenied": "Location permission denied. Try searching by address instead.",
+    "searchPlaceholder": "Search address or building",
+    "search": "Search",
+    "searchNoKey": "Address search is unavailable because the Kakao REST API key is not set.",
+    "noResults": "No results found",
+    "detail": "View details"
+  },
+  "building": {
+    "male": "Men's restroom",
+    "female": "Women's restroom",
+    "noToilet": "No information for this restroom",
+    "locked": "Passcode lock",
+    "unlocked": "No lock — free to use",
+    "location": "Location",
+    "updated": "Updated",
+    "reports": "{count} reports",
+    "lastConfirmed": "Confirmed {days} days ago",
+    "confidence": {
+      "high": "High confidence",
+      "medium": "Medium confidence",
+      "low": "Low confidence"
+    },
+    "disputed": "Under review — temporarily hidden due to a report",
+    "ownerVerified": "Owner-verified building"
+  },
+  "reveal": {
+    "show": "Show passcode",
+    "loginRequired": "Sign in to view",
+    "confirmTitle": "Viewing record notice",
+    "confirmBody": "By revealing the passcode, you will be recorded as having used this restroom at this time. Continue?",
+    "confirm": "Confirm & show",
+    "cancel": "Cancel",
+    "demo": "This is a demo passcode (not a real service)",
+    "error": "Failed to reveal. Please try again later.",
+    "needSetup": "The Firebase Admin key is not configured on the server yet.",
+    "noCredit": "You are out of free reveals and points. Contribute reports to earn points!",
+    "freeLeft": "{count} free reveals left"
+  },
+  "etiquette": {
+    "title": "Etiquette Pledge",
+    "p1": "I will keep the restroom clean.",
+    "p2": "I will respect the businesses in the building and cause no harm.",
+    "p3": "I agree that a viewing record (who, when, where) is kept whenever I reveal a passcode.",
+    "agree": "I agree"
+  },
+  "feedback": {
+    "question": "Was the passcode correct?",
+    "correct": "It worked",
+    "wrong": "It was wrong",
+    "thanks": "Thanks for your feedback!"
+  },
+  "login": {
+    "title": "Sign in",
+    "desc": "Signing in is required to reveal passcodes and submit reports.",
+    "google": "Continue with Google",
+    "kakao": "Continue with Kakao",
+    "tagline": "Find the nearest restroom and its passcode in 30 seconds.",
+    "demoContinue": "Browse in demo mode",
+    "kakaoError": "Kakao sign-in failed. Please try again.",
+    "needSetup": "Sign-in will be available once Firebase environment variables are set.",
+    "error": "Sign-in failed"
+  },
+  "report": {
+    "title": "Report a passcode",
+    "loginFirst": "Please sign in to submit a report.",
+    "searchLabel": "Search building address",
+    "selected": "Selected location",
+    "gender": "Restroom type",
+    "password": "Passcode",
+    "locationDesc": "Location description (e.g. next to the 2F stairs)",
+    "buildingName": "Building name",
+    "submit": "Submit report",
+    "success": "Report submitted! You earned +10 points.",
+    "error": "Failed to submit report",
+    "needSetup": "Reporting will be available once Firebase environment variables are set."
+  },
+  "my": {
+    "title": "My page",
+    "points": "Points",
+    "freeReveals": "Free reveals",
+    "history": "My viewing history",
+    "historyNote": "Viewing records are treated as using the restroom at that time.",
+    "empty": "No viewing history yet",
+    "loginFirst": "Sign in to see your points and viewing history.",
+    "settings": "Settings",
+    "nickname": "Nickname",
+    "nicknameDesc": "Only your nickname is shown to other users and owners.",
+    "save": "Save",
+    "saved": "Saved!"
+  },
+  "culture": {
+    "title": "Korea's Restroom Passcode Culture",
+    "intro": "Most restrooms in Korean commercial buildings are locked with passcode door locks. The passcode is usually shared only with customers of the shops inside. This service was built to lower that barrier.",
+    "s1t": "Why are there passcodes?",
+    "s1b": "Building managers and shops install door locks to reduce cleaning burdens and protect facilities. The passcode is often printed on receipts, or you have to ask the staff.",
+    "s2t": "How do I use this service?",
+    "s2b": "Find a nearby building on the map, sign in, and tap 'Show passcode' to see community-reported passcodes. Every reveal is recorded, so please use it responsibly.",
+    "s3t": "Etiquette",
+    "s3b": "Keep the restroom clean and do not disturb the businesses. If a passcode is wrong, tap 'It was wrong'; if you learn a new one, please report it."
+  },
+  "owner": {
+    "title": "Owner Dashboard",
+    "comingSoon": "Owner verification and view-log access arrive in Phase 4. Verified owners can see who viewed their building's passcode, register the official passcode, and opt out."
+  },
+  "gate": {
+    "checking": "Checking location permission…",
+    "locationTitle": "Location permission required",
+    "locationBody": "We need your current location to find restrooms near you. You must allow location access to use this service.",
+    "allow": "Allow location",
+    "deniedTitle": "Location permission denied",
+    "deniedBody": "Open the lock (site settings) icon in your browser's address bar, set Location to 'Allow', then tap Check again.",
+    "retry": "Check again"
+  },
+  "live": {
+    "live": "LIVE",
+    "title": "Live Reveal Feed",
+    "desc": "See in real time who revealed which building's passcode. Every reveal is stored as a record.",
+    "colUser": "User",
+    "colBuilding": "Building",
+    "colToilet": "Restroom",
+    "colTime": "Time",
+    "empty": "No reveals yet"
+  },
+  "battery": {
+    "title": "Server capacity",
+    "memory": "Memory",
+    "cpu": "CPU",
+    "uptime": "Uptime",
+    "offline": "Server status unavailable",
+    "retry": "Retry"
+  }
+}

@@ -1,0 +1,9 @@
+# Netlify 배포 설정 — 앱은 korea-toilet-share/ 하위에 있음
+[build]
+  base = "korea-toilet-share"
+  command = "npm run build"
+  publish = ".next"
+
+# Next.js 14 App Router (SSR/Route Handler/미들웨어) 지원 런타임
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

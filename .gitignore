@@ -1,0 +1,6 @@
+.DS_Store
+*.log
+.netlify/
+# 서비스 계정/비밀키는 절대 커밋 금지
+*service-account*.json
+*firebase-adminsdk*.json

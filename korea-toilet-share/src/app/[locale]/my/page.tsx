@@ -1,0 +1,177 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  collection,
+  doc,
+  getDocs,
+  limit,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { useFormatter, useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import LoginSheet from "@/components/common/LoginSheet";
+import { useAuth } from "@/components/providers/AuthProvider";
+import { getDb } from "@/lib/firebase/client";
+import { toMillis } from "@/types/building";
+
+interface ViewLogRow {
+  id: string;
+  buildingId: string;
+  buildingName?: string;
+  gender: "male" | "female";
+  viewedAt: unknown;
+}
+
+/** 내 정보 — 포인트/무료 열람권/열람 기록 (T-402, T-405의 기반) */
+export default function MyPage() {
+  const t = useTranslations("my");
+  const tBuilding = useTranslations("building");
+  const format = useFormatter();
+  const { user, profile, configured } = useAuth();
+
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [logs, setLogs] = useState<ViewLogRow[]>([]);
+  const [nickname, setNickname] = useState("");
+  const [savingNick, setSavingNick] = useState(false);
+  const [savedNick, setSavedNick] = useState(false);
+
+  // 프로필 로드/변경 시 닉네임 입력값 동기화
+  useEffect(() => {
+    if (profile?.nickname) setNickname(profile.nickname);
+  }, [profile?.nickname]);
+
+  async function saveNickname() {
+    if (!user || !nickname.trim()) return;
+    setSavingNick(true);
+    setSavedNick(false);
+    try {
+      await updateDoc(doc(getDb(), "users", user.uid), {
+        nickname: nickname.trim(),
+      });
+      setSavedNick(true);
+      setTimeout(() => setSavedNick(false), 2500);
+    } finally {
+      setSavingNick(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!configured || !user) return;
+    getDocs(
+      query(
+        collection(getDb(), "viewLogs"),
+        where("viewerId", "==", user.uid),
+        limit(50)
+      )
+    )
+      .then((snap) => {
+        const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ViewLogRow, "id">) }));
+        rows.sort((a, b) => (toMillis(b.viewedAt) ?? 0) - (toMillis(a.viewedAt) ?? 0));
+        setLogs(rows);
+      })
+      .catch(() => undefined);
+  }, [configured, user]);
+
+  if (!configured || !user) {
+    return (
+      <div className="mx-auto max-w-lg space-y-3 p-4">
+        <h1 className="text-xl font-bold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("loginFirst")}</p>
+        {configured && (
+          <>
+            <Button onClick={() => setLoginOpen(true)}>{t("loginFirst")}</Button>
+            <LoginSheet open={loginOpen} onOpenChange={setLoginOpen} />
+          </>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-lg space-y-4 p-4">
+      <h1 className="text-xl font-bold">{t("title")}</h1>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground">{t("points")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-primary">{profile?.points ?? 0}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground">{t("freeReveals")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-primary">{profile?.freeReveals ?? 0}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("settings")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <label className="block text-sm font-medium">{t("nickname")}</label>
+          <p className="text-xs text-muted-foreground">{t("nicknameDesc")}</p>
+          <div className="flex gap-2">
+            <Input
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength={20}
+            />
+            <Button
+              onClick={saveNickname}
+              disabled={savingNick || !nickname.trim() || nickname.trim() === profile?.nickname}
+              className="shrink-0"
+            >
+              {t("save")}
+            </Button>
+          </div>
+          {savedNick && <p className="text-sm text-green-600">{t("saved")}</p>}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("history")}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <p className="text-xs text-muted-foreground">{t("historyNote")}</p>
+          {logs.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("empty")}</p>
+          ) : (
+            <ul className="divide-y">
+              {logs.map((log) => {
+                const ms = toMillis(log.viewedAt);
+                return (
+                  <li key={log.id} className="flex items-center justify-between py-2 text-sm">
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">
+                        {log.buildingName ?? log.buildingId}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {ms != null &&
+                          format.dateTime(new Date(ms), { dateStyle: "medium", timeStyle: "short" })}
+                      </span>
+                    </span>
+                    <Badge variant="secondary">{tBuilding(log.gender)}</Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

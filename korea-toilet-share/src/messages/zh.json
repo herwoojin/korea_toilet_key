@@ -1,0 +1,158 @@
+{
+  "app": {
+    "name": "Korea Toilet Sharing Service",
+    "shortName": "韩国卫生间共享",
+    "description": "在地图上查看韩国商业楼宇男女卫生间位置与门禁密码的信任型共享服务",
+    "demoBanner": "演示模式 — 设置 Firebase 环境变量后将显示真实数据"
+  },
+  "common": {
+    "loading": "加载中…",
+    "notFound": "未找到",
+    "back": "返回",
+    "close": "关闭"
+  },
+  "tabs": {
+    "map": "地图",
+    "live": "实时",
+    "report": "提交",
+    "my": "我的"
+  },
+  "header": {
+    "login": "登录",
+    "logout": "退出登录",
+    "culture": "卫生间文化指南"
+  },
+  "map": {
+    "locate": "回到我的位置",
+    "geoDenied": "位置权限被拒绝。请尝试通过地址搜索。",
+    "searchPlaceholder": "搜索地址或建筑名",
+    "search": "搜索",
+    "searchNoKey": "未设置 Kakao REST API 密钥，无法使用地址搜索。",
+    "noResults": "没有搜索结果",
+    "detail": "查看详情"
+  },
+  "building": {
+    "male": "男卫生间",
+    "female": "女卫生间",
+    "noToilet": "暂无该卫生间信息",
+    "locked": "密码锁",
+    "unlocked": "无锁 — 可直接使用",
+    "location": "位置",
+    "updated": "更新时间",
+    "reports": "{count} 条提交",
+    "lastConfirmed": "{days} 天前确认",
+    "confidence": {
+      "high": "可信度高",
+      "medium": "可信度中等",
+      "low": "可信度低"
+    },
+    "disputed": "审核中 — 因举报暂时隐藏",
+    "ownerVerified": "业主认证楼宇"
+  },
+  "reveal": {
+    "show": "查看密码",
+    "loginRequired": "登录后可查看",
+    "confirmTitle": "查看记录提示",
+    "confirmBody": "查看密码后，系统将记录您在此时刻使用了该卫生间。是否继续？",
+    "confirm": "确认并查看",
+    "cancel": "取消",
+    "demo": "这是演示密码（非真实服务）",
+    "error": "查看失败，请稍后重试。",
+    "needSetup": "服务器尚未配置 Firebase Admin 密钥。",
+    "noCredit": "免费查看次数和积分不足。通过提交信息来赚取积分吧！",
+    "freeLeft": "剩余免费查看 {count} 次"
+  },
+  "etiquette": {
+    "title": "使用礼仪承诺",
+    "p1": "我会保持卫生间清洁。",
+    "p2": "我会尊重楼内商家的经营，不造成任何损害。",
+    "p3": "我同意每次查看密码时保留查看记录（谁、何时、何地）。",
+    "agree": "我同意"
+  },
+  "feedback": {
+    "question": "密码正确吗？",
+    "correct": "正确",
+    "wrong": "错误",
+    "thanks": "感谢您的反馈！"
+  },
+  "login": {
+    "title": "登录",
+    "desc": "查看密码和提交信息需要登录。",
+    "google": "使用 Google 继续",
+    "kakao": "使用 Kakao 继续",
+    "tagline": "30秒内找到最近的卫生间和密码。",
+    "demoContinue": "以演示模式浏览",
+    "kakaoError": "Kakao 登录失败，请重试。",
+    "needSetup": "设置 Firebase 环境变量后即可使用登录功能。",
+    "error": "登录失败"
+  },
+  "report": {
+    "title": "提交密码",
+    "loginFirst": "请先登录后再提交。",
+    "searchLabel": "搜索楼宇地址",
+    "selected": "已选位置",
+    "gender": "卫生间类型",
+    "password": "密码",
+    "locationDesc": "位置说明（如：2楼楼梯旁）",
+    "buildingName": "楼宇名称",
+    "submit": "提交",
+    "success": "提交成功！获得 +10 积分。",
+    "error": "提交失败",
+    "needSetup": "设置 Firebase 环境变量后即可使用提交功能。"
+  },
+  "my": {
+    "title": "我的信息",
+    "points": "积分",
+    "freeReveals": "免费查看次数",
+    "history": "我的查看记录",
+    "historyNote": "查看记录将被视为在该时刻使用了卫生间。",
+    "empty": "暂无查看记录",
+    "loginFirst": "登录后可查看积分和查看记录。",
+    "settings": "设置",
+    "nickname": "昵称",
+    "nicknameDesc": "其他用户和业主只会看到您的昵称。",
+    "save": "保存",
+    "saved": "已保存！"
+  },
+  "culture": {
+    "title": "韩国的卫生间密码文化",
+    "intro": "韩国商业楼宇的卫生间大多使用密码门锁管理。密码通常只告知楼内餐厅、咖啡店等商家的顾客。本服务旨在降低这道门槛。",
+    "s1t": "为什么会有密码？",
+    "s1b": "楼宇管理方和商家为减轻清洁负担、保护设施而安装门锁。密码通常印在收据上，或需要向店员询问。",
+    "s2t": "如何使用本服务？",
+    "s2b": "在地图上找到附近的楼宇，登录后点击\"查看密码\"即可看到社区提交的密码。每次查看都会留下记录，请负责任地使用。",
+    "s3t": "使用礼仪",
+    "s3b": "请保持卫生间清洁，不要打扰商家经营。如果密码错误请点击\"错误\"反馈；如果得知新密码，欢迎提交。"
+  },
+  "owner": {
+    "title": "业主控制台",
+    "comingSoon": "业主认证与查看日志功能将在 Phase 4 提供。认证业主可查看本楼宇的查看记录、登记官方密码或选择不公开。"
+  },
+  "gate": {
+    "checking": "正在检查位置权限…",
+    "locationTitle": "需要位置权限",
+    "locationBody": "查找附近卫生间需要您的当前位置。必须允许位置权限才能使用本服务。",
+    "allow": "允许位置",
+    "deniedTitle": "位置权限被拒绝",
+    "deniedBody": "请点击浏览器地址栏的锁形（设置）图标 → 网站设置，将位置权限改为允许，然后点击重新检查。",
+    "retry": "重新检查"
+  },
+  "live": {
+    "live": "LIVE",
+    "title": "实时查看动态",
+    "desc": "实时共享谁查看了哪栋楼的密码，所有查看都会被保存为记录。",
+    "colUser": "用户",
+    "colBuilding": "楼宇",
+    "colToilet": "卫生间",
+    "colTime": "时间",
+    "empty": "暂无查看记录"
+  },
+  "battery": {
+    "title": "服务器容量",
+    "memory": "内存",
+    "cpu": "CPU",
+    "uptime": "运行时间",
+    "offline": "无法获取服务器状态",
+    "retry": "重试"
+  }
+}

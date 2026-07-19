@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Korea Toilet Sharing Service — ERD §4 접근 제어 매트릭스 (T-205)
+// 핵심: secrets는 어떤 클라이언트도 read 불가 → /api/reveal(Admin SDK) 경유 강제
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // buildings: 비로그인 read 허용 (비밀번호 원문은 여기 없음)
+    match /buildings/{buildingId} {
+      allow read: if true;
+      allow create: if signedIn();
+      // 오너만 자기 빌딩 update (오너 대시보드는 Phase 4)
+      allow update: if signedIn() && resource.data.ownerId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // ★ secrets: 서버(Admin SDK) 전용 — 클라이언트 read/write 전면 차단
+    match /secrets/{buildingId} {
+      allow read, write: if false;
+    }
+
+    // reports: 불변 로그 — 서버 API 경유 생성이 기본이나 규칙상 본인 create 허용
+    match /reports/{reportId} {
+      allow create: if signedIn() && request.resource.data.reporterId == request.auth.uid;
+      allow read: if signedIn();
+      allow update, delete: if false;
+    }
+
+    // viewLogs: 서버만 create(불변) / 본인 것 또는 자기 빌딩(오너)만 read
+    match /viewLogs/{logId} {
+      allow create: if false;
+      allow read: if signedIn() && (
+        resource.data.viewerId == request.auth.uid ||
+        get(/databases/$(db)/documents/buildings/$(resource.data.buildingId)).data.ownerId == request.auth.uid
+      );
+      allow update, delete: if false;
+    }
+
+    // users: 본인 문서만
+    // TODO(T-205): points/freeReveals 클라이언트 증가 차단 필드 검증 추가 + 에뮬레이터 테스트
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // liveFeed: 실시간 공유 열람 피드 — 서버만 create, 누구나 read (민감정보 없음)
+    match /liveFeed/{feedId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /feedbacks/{feedbackId} {
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /flags/{flagId} {
+      allow create: if signedIn();
+      allow read: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /owners/{uid} {
+      allow read, create: if signedIn() && request.auth.uid == uid;
+      allow update, delete: if false;
+    }
+  }
+}
