@@ -10,7 +10,8 @@ export const runtime = "nodejs";
  * → Firebase Custom Token 발급 → 앱으로 해시(#kakaoToken=)로 전달
  */
 export async function GET(req: NextRequest) {
-  const origin = req.nextUrl.origin;
+  // start 라우트와 동일한 대표 도메인 사용 — 토큰 교환 redirect_uri는 인가 요청과 정확히 일치해야 함
+  const origin = process.env.APP_ORIGIN ?? process.env.URL ?? req.nextUrl.origin;
   const locale = req.nextUrl.searchParams.get("state") ?? "ko";
   const back = (fragment: string) =>
     NextResponse.redirect(`${origin}/${locale}#${fragment}`);

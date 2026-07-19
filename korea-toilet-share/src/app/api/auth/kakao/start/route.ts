@@ -8,7 +8,9 @@ export const runtime = "nodejs";
  */
 export async function GET(req: NextRequest) {
   const locale = req.nextUrl.searchParams.get("locale") ?? "ko";
-  const origin = req.nextUrl.origin;
+  // Netlify에서 req.nextUrl.origin은 브랜치 URL(main--*.netlify.app)로 잡혀 redirect_uri 불일치(KOE006) 발생
+  // → 대표 도메인(APP_ORIGIN 또는 Netlify 제공 URL) 우선 사용
+  const origin = process.env.APP_ORIGIN ?? process.env.URL ?? req.nextUrl.origin;
 
   const key = process.env.KAKAO_REST_API_KEY;
   if (!key) {

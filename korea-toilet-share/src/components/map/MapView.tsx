@@ -264,7 +264,12 @@ export default function MapView() {
       });
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) {
-        setPinError(data?.error === "TOO_FAR" ? tPin("tooFar") : tReport("error"));
+        // 에러 코드를 함께 노출해 원인 파악 가능하게 (JSON이 아니면 HTTP 상태로 대체)
+        setPinError(
+          data?.error === "TOO_FAR"
+            ? tPin("tooFar")
+            : `${tReport("error")} (${data?.error ?? `HTTP ${res.status}`})`
+        );
         return;
       }
       setPendingPin(null);
