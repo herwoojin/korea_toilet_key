@@ -1,66 +1,140 @@
 {
   "project": "Korea Toilet Sharing Service",
   "description": "대한민국 상가·빌딩의 남녀 화장실 위치와 출입 비밀번호를 지도에서 확인하는 신뢰 기반 크라우드소싱 공유 웹앱",
-  "lastUpdated": "2026-07-19",
-  "architectureSummary": "Next.js 14 App Router(Vercel) + Firebase Auth/Firestore. 비밀번호 원문은 secrets 컬렉션(서버 전용)에 분리, /api/reveal에서 열람 로그 트랜잭션 기록 후에만 반환. 지도는 MapProvider 추상화로 Leaflet(OSM) 기본, Kakao 전환 가능.",
+  "lastUpdated": "2026-07-20",
+  "architectureSummary": "Next.js 14 + Firebase Auth(구글 로그인 전용) + Google Sheets 저장소(Apps Script Web App) + Leaflet(OSM) + next-intl(ko/en/zh/ja). 핀 저장/조회/피드백은 /api/pins → SHEETS_WEBAPP_URL 프록시.",
   "repo": "korea_toilet_sharing_key/korea-toilet-share",
   "categories": [
     {
       "name": "프론트엔드",
       "items": [
-        { "name": "Next.js", "version": "14.2 (App Router)", "purpose": "SSR/라우팅/API Route Handler" },
-        { "name": "TypeScript", "version": "5", "purpose": "정적 타입" },
-        { "name": "Tailwind CSS", "version": "3.4", "purpose": "모바일 우선 스타일링" },
-        { "name": "shadcn/ui 스타일 컴포넌트", "purpose": "Button/Card/Dialog 등 (radix-ui + cva 직접 구성)" },
-        { "name": "lucide-react", "purpose": "아이콘" }
+        {
+          "name": "Next.js",
+          "version": "14.2 (App Router)",
+          "purpose": "SSR/라우팅/API Route Handler"
+        },
+        {
+          "name": "TypeScript",
+          "version": "5",
+          "purpose": "정적 타입"
+        },
+        {
+          "name": "Tailwind CSS",
+          "version": "3.4",
+          "purpose": "모바일 우선 스타일링"
+        },
+        {
+          "name": "shadcn/ui 스타일 컴포넌트",
+          "purpose": "Button/Card/Dialog 등 (radix-ui + cva 직접 구성)"
+        },
+        {
+          "name": "lucide-react",
+          "purpose": "아이콘"
+        }
       ]
     },
     {
       "name": "지도",
       "items": [
-        { "name": "Leaflet + react-leaflet", "version": "1.9 / 4.2", "purpose": "지도 렌더 (OSM 타일, API 키 불필요)", "config": "NEXT_PUBLIC_MAP_PROVIDER=osm" },
-        { "name": "geofire-common", "version": "6", "purpose": "geohash 반경 쿼리" },
-        { "name": "Kakao Local REST API", "purpose": "주소↔좌표 지오코딩 (/api/geocode 프록시, 서버 키 은닉)" }
+        {
+          "name": "Leaflet + react-leaflet",
+          "version": "1.9 / 4.2",
+          "purpose": "지도 렌더 (OSM 타일, API 키 불필요)",
+          "config": "NEXT_PUBLIC_MAP_PROVIDER=osm"
+        },
+        {
+          "name": "geofire-common",
+          "version": "6",
+          "purpose": "geohash 반경 쿼리"
+        },
+        {
+          "name": "Kakao Local REST API",
+          "purpose": "주소↔좌표 지오코딩 (/api/geocode 프록시, 서버 키 은닉)"
+        }
       ]
     },
     {
       "name": "백엔드(핵심)",
       "items": [
-        { "name": "Firebase Authentication", "purpose": "Google 팝업 로그인 + Kakao 인가코드→Custom Token 로그인 (/api/auth/kakao)" },
-        { "name": "Cloud Firestore", "purpose": "buildings/secrets/reports/viewLogs/users/feedbacks/liveFeed(실시간 공유 피드) 저장" },
-        { "name": "firebase-admin", "version": "14", "purpose": "서버 전용 secrets 읽기 + viewLogs 트랜잭션 기록" }
+        {
+          "name": "Firebase Authentication",
+          "purpose": "Google 팝업 로그인 + Kakao 인가코드→Custom Token 로그인 (/api/auth/kakao)"
+        },
+        {
+          "name": "Cloud Firestore",
+          "purpose": "buildings/secrets/reports/viewLogs/users/feedbacks/liveFeed(실시간 공유 피드) 저장"
+        },
+        {
+          "name": "firebase-admin",
+          "version": "14",
+          "purpose": "서버 전용 secrets 읽기 + viewLogs 트랜잭션 기록"
+        }
       ]
     },
     {
       "name": "국제화",
       "items": [
-        { "name": "next-intl", "version": "3.26", "purpose": "/[locale] 라우팅 ko/en/zh/ja + 메시지 파일" }
+        {
+          "name": "next-intl",
+          "version": "3.26",
+          "purpose": "/[locale] 라우팅 ko/en/zh/ja + 메시지 파일"
+        }
       ]
     },
     {
       "name": "인증·접근제어",
       "items": [
-        { "name": "Firestore Security Rules", "purpose": "secrets 클라이언트 read 전면 차단, viewLogs 불변, 본인 문서만 접근", "config": "firestore.rules" }
+        {
+          "name": "Firestore Security Rules",
+          "purpose": "secrets 클라이언트 read 전면 차단, viewLogs 불변, 본인 문서만 접근",
+          "config": "firestore.rules"
+        }
       ]
     },
     {
       "name": "운영 가시성(Observability)",
       "items": [
-        { "name": "/api/server-health + ServerBattery", "purpose": "서버 용량 신호등 (우측 하단 배터리 인디케이터, 30초 폴링)" }
+        {
+          "name": "/api/server-health + ServerBattery",
+          "purpose": "서버 용량 신호등 (우측 하단 배터리 인디케이터, 30초 폴링)"
+        }
       ]
     },
     {
       "name": "테스트",
       "items": [
-        { "name": "Vitest", "version": "4", "purpose": "합의 알고리즘(consensus.ts) 단위 테스트" },
-        { "name": "Playwright", "purpose": "E2E (T-602 예정)" }
+        {
+          "name": "Vitest",
+          "version": "4",
+          "purpose": "합의 알고리즘(consensus.ts) 단위 테스트"
+        },
+        {
+          "name": "Playwright",
+          "purpose": "E2E (T-602 예정)"
+        }
       ]
     },
     {
       "name": "호스팅·배포",
       "items": [
-        { "name": "Vercel", "purpose": "프로덕션 배포 (T-604 예정)" },
-        { "name": "Firebase Spark(무료 티어)", "purpose": "1차 운영 비용 목표" }
+        {
+          "name": "Vercel",
+          "purpose": "프로덕션 배포 (T-604 예정)"
+        },
+        {
+          "name": "Firebase Spark(무료 티어)",
+          "purpose": "1차 운영 비용 목표"
+        }
+      ]
+    },
+    {
+      "name": "데이터·스토리지(현행)",
+      "items": [
+        {
+          "name": "Google Sheets + Apps Script",
+          "purpose": "핀 저장소 — 목록/추가/맞아요·틀려요 카운트",
+          "config": "scripts/sheets-webapp.gs 배포 → SHEETS_WEBAPP_URL"
+        }
       ]
     }
   ]

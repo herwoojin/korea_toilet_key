@@ -1,15 +1,8 @@
-import { NextResponse } from "next/server";
 import { getAdminAuth, isAdminConfigured } from "@/lib/firebase/admin";
+import { ApiError } from "@/lib/server/errors";
 
-/** Route Handler 공용 에러 — code는 클라이언트 i18n 매핑용 */
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public code: string
-  ) {
-    super(code);
-  }
-}
+// firebase-admin 없이 쓰는 라우트는 @/lib/server/errors 를 직접 import할 것
+export { ApiError, handleApiError } from "@/lib/server/errors";
 
 /** Authorization: Bearer <Firebase ID Token> 검증 → uid 반환 */
 export async function requireUid(req: Request): Promise<string> {
@@ -31,12 +24,4 @@ export async function requireUid(req: Request): Promise<string> {
   } catch {
     throw new ApiError(401, "UNAUTHENTICATED");
   }
-}
-
-export function handleApiError(e: unknown): NextResponse {
-  if (e instanceof ApiError) {
-    return NextResponse.json({ error: e.code }, { status: e.status });
-  }
-  console.error("[api] unexpected error", e);
-  return NextResponse.json({ error: "INTERNAL" }, { status: 500 });
 }

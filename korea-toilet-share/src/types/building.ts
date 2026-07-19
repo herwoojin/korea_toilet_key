@@ -25,6 +25,8 @@ export interface Building {
   lng: number;
   geohash: string;
   toilets: { male?: ToiletInfo; female?: ToiletInfo };
+  /** 구글시트 저장소 모드 — 비번이 목록 응답에 포함됨 (시트 자체가 공유 문서) */
+  passwords?: { male?: string; female?: string };
   ownerId?: string;
   ownerVerified?: boolean;
   isPublicByOwner?: boolean;

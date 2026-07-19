@@ -1,7 +1,7 @@
 # TECH_STACK — Korea Toilet Sharing Service
 
-> 한줄 요약: Next.js 14 + Firebase(Auth/Firestore) + Leaflet(OSM) + next-intl 4개 언어, "기록이 남는 신뢰 기반 열람" 웹앱
-> 마지막 업데이트: 2026-07-19 · 머신용 데이터: [public/techstack.json](public/techstack.json)
+> 한줄 요약: Next.js 14 + Firebase(구글 로그인 전용) + **Google Sheets 저장소(Apps Script)** + Leaflet(OSM) + next-intl 4개 언어
+> 마지막 업데이트: 2026-07-20 · 머신용 데이터: [public/techstack.json](public/techstack.json)
 
 ## 아키텍처
 
@@ -28,11 +28,12 @@ flowchart TD
 | Leaflet / react-leaflet | 1.9 / 4.2 | 지도 (OSM) | `src/components/map/MapView.tsx` | dynamic import ssr:false 필수 |
 | geofire-common | 6 | geohash 반경 쿼리 | `src/lib/geo.ts` | 경계 셀 전체 순회 |
 | next-intl | 3.26 | i18n (ko/en/zh/ja) | `src/i18n/`, `src/messages/` | 하드코딩 문자열 금지 |
-| Firebase Auth | 12 | Google 팝업 + Kakao(인가코드→Custom Token) | `src/lib/firebase/client.ts`, `src/app/api/auth/kakao/` | Kakao 콘솔 Redirect URI 등록 필요 |
-| Cloud Firestore | 12 | 데이터 저장 | ERD.md 참고 | secrets는 서버 전용 |
-| firebase-admin | 14 | 서버 전용 열람/제보 API | `src/lib/firebase/admin.ts` | `FIREBASE_ADMIN_KEY` |
+| Firebase Auth | 12 | **Google 로그인 전용** (카카오 버튼 제거) | `src/lib/firebase/client.ts` | 서버 토큰 검증은 Identity Toolkit REST |
+| Google Sheets + Apps Script | - | **핀 저장소** (읽기/추가/피드백) | `scripts/sheets-webapp.gs`, `src/lib/server/sheets.ts`, `src/app/api/pins/route.ts` | `SHEETS_WEBAPP_URL` (Netlify 환경변수) |
+| Cloud Firestore | 12 | 사용자 프로필·에티켓 서약만 (클라이언트 SDK) | `src/components/providers/AuthProvider.tsx` | 핀 저장은 시트로 이전 |
+| firebase-admin | 14 | 레거시 API(report/reveal/feedback)만 사용, UI에서 미사용 | `src/lib/firebase/admin.ts` | 제거 후보 |
 | Vitest | 4 | consensus 단위 테스트 | `src/lib/consensus.test.ts` | `npm test` |
-| Vercel | - | 배포 (예정 T-604) | - | |
+| Netlify | - | 배포 (https://25z.netlify.app) | `netlify.toml` (리포 루트) | @netlify/plugin-nextjs |
 
 ## 왜 이걸 골랐나
 
@@ -52,5 +53,6 @@ flowchart TD
 ## 알려진 한계
 
 - 데모 모드(env 미설정)에서는 목업 데이터·가짜 비밀번호로 UX만 시연됨
-- Kakao 로그인(T-202), 오너 대시보드(T-403~404), PWA(T-601), Rules 에뮬레이터 테스트(T-205 테스트 부분)는 미구현
-- `users` 문서의 points/freeReveals 필드 클라이언트 변조 차단 Rules 필드 검증은 T-205에서 보강 필요
+- **시트 저장소 전환(2026-07-20)**: 비밀번호가 핀 목록 응답과 공유 시트에 그대로 노출됨 — "기록이 남는 열람" 원칙은 약화됨 (에티켓 서약 게이트만 유지)
+- 시트 전체를 매 조회마다 읽으므로 핀 수백 개 이상이면 응답 지연 가능 → 캐시/페이지네이션 검토
+- 카카오 로그인 UI 제거됨 (라우트는 잔존), 오너 대시보드(T-403~404), PWA(T-601)는 미구현

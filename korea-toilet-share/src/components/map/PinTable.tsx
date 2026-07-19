@@ -27,7 +27,6 @@ export default function PinTable({ buildings, onClose, onRowClick }: Props) {
   const { user, profile } = useAuth();
 
   const [revealed, setRevealed] = useState<Record<string, string>>({});
-  const [viewLogs, setViewLogs] = useState<Record<string, string>>({});
   const [counts, setCounts] = useState<Record<string, { c: number; w: number }>>({});
   const [msg, setMsg] = useState<string | null>(null);
   const [pledgeOpen, setPledgeOpen] = useState(false);
@@ -48,34 +47,18 @@ export default function PinTable({ buildings, onClose, onRowClick }: Props) {
       if (v) setRevealed((prev) => ({ ...prev, [key]: v }));
       return;
     }
-    if (!user) return;
+    if (!user) {
+      setMsg(tReveal("loginRequired"));
+      return;
+    }
     if (!profile?.etiquetteAgreedAt) {
       setPledgeOpen(true);
       return;
     }
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch("/api/reveal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ buildingId: b.id, gender }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const code = data?.error as string | undefined;
-        if (code === "NO_CREDIT") setMsg(tReveal("noCredit"));
-        else if (code === "NO_ADMIN") setMsg(tReveal("needSetup"));
-        else setMsg(tReveal("error"));
-        return;
-      }
-      setRevealed((prev) => ({ ...prev, [key]: data.password }));
-      setViewLogs((prev) => ({ ...prev, [b.id]: data.viewLogId }));
-    } catch {
-      setMsg(tReveal("error"));
-    }
+    // 구글시트 저장소 — 비번이 목록 데이터에 포함되어 있어 서버 호출 없이 표시
+    const v = b.passwords?.[gender];
+    if (v) setRevealed((prev) => ({ ...prev, [key]: v }));
+    else setMsg(tReveal("error"));
   }
 
   async function feedback(b: Building, result: "correct" | "wrong") {
@@ -96,20 +79,20 @@ export default function PinTable({ buildings, onClose, onRowClick }: Props) {
       bump();
       return;
     }
-    const viewLogId = viewLogs[b.id];
-    if (!viewLogId || !user) {
-      setMsg(t("needReveal"));
+    if (!user) {
+      setMsg(tReveal("loginRequired"));
       return;
     }
     try {
       const token = await user.getIdToken();
-      const res = await fetch("/api/feedback", {
-        method: "POST",
+      // 구글시트 저장소 — 핀 id 기준 카운트 증가
+      const res = await fetch("/api/pins", {
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ viewLogId, result }),
+        body: JSON.stringify({ id: b.id, result }),
       });
       if (res.ok) bump();
     } catch {

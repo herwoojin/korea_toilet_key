@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { getClientAuth, isFirebaseConfigured } from "@/lib/firebase/client";
 
@@ -15,7 +15,6 @@ interface Props {
 /** Google + Kakao 로그인 버튼 (첫 로그인 화면과 LoginSheet에서 공용) */
 export default function LoginButtons({ onSuccess, extraError }: Props) {
   const t = useTranslations("login");
-  const locale = useLocale();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -32,11 +31,6 @@ export default function LoginButtons({ onSuccess, extraError }: Props) {
     }
   }
 
-  function loginKakao() {
-    // REST 키 은닉을 위해 서버 라우트가 카카오 인가 URL로 302 리다이렉트 (T-202)
-    window.location.href = `/api/auth/kakao/start?locale=${locale}`;
-  }
-
   if (!isFirebaseConfigured) {
     return (
       <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
@@ -51,13 +45,6 @@ export default function LoginButtons({ onSuccess, extraError }: Props) {
     <div className="flex w-full flex-col gap-2">
       <Button onClick={loginGoogle} disabled={busy}>
         {t("google")}
-      </Button>
-      <Button
-        onClick={loginKakao}
-        disabled={busy}
-        className="bg-[#FEE500] text-[#191919] hover:bg-[#FEE500]/90"
-      >
-        {t("kakao")}
       </Button>
       {shownError && <p className="text-sm text-destructive">{shownError}</p>}
     </div>

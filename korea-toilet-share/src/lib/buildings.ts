@@ -1,18 +1,21 @@
-import {
-  collection,
-  doc,
-  endAt,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  startAt,
-} from "firebase/firestore";
-import { getDb, isFirebaseConfigured } from "@/lib/firebase/client";
-import { distanceM, radiusBounds } from "@/lib/geo";
+import { isFirebaseConfigured } from "@/lib/firebase/client";
+import { distanceM } from "@/lib/geo";
 import { MOCK_BUILDINGS } from "@/lib/mock/buildings";
 import { LOCAL_PINS } from "@/lib/mock/localPins";
 import type { Building } from "@/types/building";
+
+/**
+ * 핀 저장소: Google Sheets (/api/pins 프록시) — Firestore 저장은 사용하지 않음.
+ * Firebase env 미설정(데모 모드) 시에는 브라우저 메모리 데이터 반환.
+ */
+async function fetchAllPins(): Promise<Building[]> {
+  const res = await fetch("/api/pins", { cache: "no-store" });
+  if (!res.ok) return [];
+  const data = (await res.json().catch(() => null)) as
+    | { buildings?: Building[] }
+    | null;
+  return data?.buildings ?? [];
+}
 
 /** 주변 빌딩 조회 — Firebase 미설정 시 데모 데이터 반환 */
 export async function fetchNearbyBuildings(
@@ -25,20 +28,8 @@ export async function fetchNearbyBuildings(
       (b) => distanceM(lat, lng, b.lat, b.lng) <= Math.max(radiusMeters, 2000)
     );
   }
-  const db = getDb();
-  const seen = new Map<string, Building>();
-  for (const [start, end] of radiusBounds(lat, lng, radiusMeters)) {
-    const snap = await getDocs(
-      query(collection(db, "buildings"), orderBy("geohash"), startAt(start), endAt(end))
-    );
-    snap.forEach((d) => {
-      const data = d.data() as Building;
-      if (data.status !== "hidden") seen.set(d.id, { ...data, id: d.id });
-    });
-  }
-  return [...seen.values()].filter(
-    (b) => distanceM(lat, lng, b.lat, b.lng) <= radiusMeters
-  );
+  const all = await fetchAllPins();
+  return all.filter((b) => distanceM(lat, lng, b.lat, b.lng) <= radiusMeters);
 }
 
 export async function fetchBuilding(id: string): Promise<Building | null> {
@@ -49,6 +40,6 @@ export async function fetchBuilding(id: string): Promise<Building | null> {
       null
     );
   }
-  const snap = await getDoc(doc(getDb(), "buildings", id));
-  return snap.exists() ? ({ ...(snap.data() as Building), id: snap.id }) : null;
+  const all = await fetchAllPins();
+  return all.find((b) => b.id === id) ?? null;
 }

@@ -240,24 +240,22 @@ export default function MapView() {
       }
       if (!user) return;
       const token = await user.getIdToken();
-      const res = await fetch("/api/report", {
+      // 저장소: Google Sheets (/api/pins) — Firestore 미사용
+      const res = await fetch("/api/pins", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          newBuilding: {
-            name: fields.buildingName,
-            storeName: fields.storeName || undefined,
-            address: pendingAddress ?? "",
-            lat: pendingPin.lat,
-            lng: pendingPin.lng,
-          },
-          passwords: {
-            male: fields.malePw || undefined,
-            female: fields.femalePw || undefined,
-          },
+          name: fields.buildingName,
+          storeName: fields.storeName || undefined,
+          address: pendingAddress ?? "",
+          lat: pendingPin.lat,
+          lng: pendingPin.lng,
+          malePw: fields.malePw || undefined,
+          femalePw: fields.femalePw || undefined,
+          nickname: profile?.nickname ?? user.displayName ?? "user",
           gpsLat: myLocation?.lat,
           gpsLng: myLocation?.lng,
         }),
