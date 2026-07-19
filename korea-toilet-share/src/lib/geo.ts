@@ -8,6 +8,8 @@ export const DEFAULT_RADIUS_M = 500;
 export const MAX_RADIUS_M = 2000;
 /** 이 거리 이내면 "현장" 열람/제보로 판정 (TRD §3.3) */
 export const ONSITE_THRESHOLD_M = 150;
+/** 실제 위치 기준 빌딩 표시·핀 등록 허용 반경 (2026-07-19 사용자 요구: 50m) */
+export const REGISTER_RADIUS_M = 50;
 
 export function computeGeohash(lat: number, lng: number): string {
   return geohashForLocation([lat, lng]);

@@ -24,6 +24,7 @@
   },
   "map": {
     "locate": "내 위치로 이동",
+    "nearOnly": "내 위치 반경 50m 안의 빌딩만 표시됩니다. 이동하면 자동으로 갱신돼요.",
     "geoDenied": "위치 권한이 거부되었습니다. 주소 검색으로 찾아보세요.",
     "searchPlaceholder": "주소·건물명 검색",
     "search": "검색",
@@ -139,6 +140,7 @@
     "cancel": "취소",
     "needBuildingName": "건물명을 입력해주세요",
     "needAnyPw": "남자 또는 여자 비밀번호 중 하나는 입력해주세요",
+    "tooFar": "현재 위치에서 반경 50m 안의 지점만 등록할 수 있어요.",
     "list": "핀 목록",
     "total": "현재 등록된 전체 핀셋 {count}개",
     "colBuilding": "건물명",

@@ -24,6 +24,7 @@
   },
   "map": {
     "locate": "Go to my location",
+    "nearOnly": "Only buildings within 50 m of your location are shown. They refresh as you move.",
     "geoDenied": "Location permission denied. Try searching by address instead.",
     "searchPlaceholder": "Search address or building",
     "search": "Search",
@@ -139,6 +140,7 @@
     "cancel": "Cancel",
     "needBuildingName": "Please enter a building name",
     "needAnyPw": "Enter at least one passcode (men's or women's)",
+    "tooFar": "You can only add pins within 50 m of your current location.",
     "list": "Pin list",
     "total": "{count} pins registered in total",
     "colBuilding": "Building",

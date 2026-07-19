@@ -21,6 +21,7 @@ interface GeocodeResult {
 export default function ReportPage() {
   const t = useTranslations("report");
   const tBuilding = useTranslations("building");
+  const tPin = useTranslations("pin");
   const { user, configured } = useAuth();
 
   const [loginOpen, setLoginOpen] = useState(false);
@@ -82,7 +83,14 @@ export default function ReportPage() {
           gpsLng: gps?.lng,
         }),
       });
-      if (!res.ok) throw new Error("report failed");
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setMessage({
+          ok: false,
+          text: data?.error === "TOO_FAR" ? tPin("tooFar") : t("error"),
+        });
+        return;
+      }
       setMessage({ ok: true, text: t("success") });
       setPassword("");
       setLocationDesc("");

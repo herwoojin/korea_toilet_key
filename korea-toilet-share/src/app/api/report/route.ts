@@ -2,12 +2,35 @@ import { NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { ApiError, handleApiError, requireUid } from "@/lib/server/api";
-import { computeGeohash, distanceM, ONSITE_THRESHOLD_M } from "@/lib/geo";
+import {
+  computeGeohash,
+  distanceM,
+  ONSITE_THRESHOLD_M,
+  REGISTER_RADIUS_M,
+} from "@/lib/geo";
 import { recomputeConsensus } from "@/lib/server/consensusService";
 
 export const runtime = "nodejs";
 
 const REPORT_POINTS = 10;
+
+/** 등록 위치 제한 — 제보자의 실제 GPS가 대상 빌딩 반경 50m 안이어야 한다 */
+function ensureNear(
+  gpsLat: number | undefined,
+  gpsLng: number | undefined,
+  lat: number | null | undefined,
+  lng: number | null | undefined
+) {
+  if (
+    typeof gpsLat !== "number" ||
+    typeof gpsLng !== "number" ||
+    lat == null ||
+    lng == null ||
+    distanceM(gpsLat, gpsLng, lat, lng) > REGISTER_RADIUS_M
+  ) {
+    throw new ApiError(403, "TOO_FAR");
+  }
+}
 
 /**
  * 비밀번호 제보 API (T-303)
@@ -64,11 +87,14 @@ export async function POST(req: Request) {
       if (!b.exists) throw new ApiError(404, "NOT_FOUND");
       buildingLat = b.data()!.lat;
       buildingLng = b.data()!.lng;
+      ensureNear(body.gpsLat, body.gpsLng, buildingLat, buildingLng);
     } else if (body.newBuilding) {
       const nb = body.newBuilding;
       if (!nb.address || typeof nb.lat !== "number" || typeof nb.lng !== "number") {
         throw new ApiError(400, "BAD_REQUEST");
       }
+      // 빌딩 생성 전에 거리 검증 (고아 문서 방지)
+      ensureNear(body.gpsLat, body.gpsLng, nb.lat, nb.lng);
       const dup = await db
         .collection("buildings")
         .where("address", "==", nb.address)

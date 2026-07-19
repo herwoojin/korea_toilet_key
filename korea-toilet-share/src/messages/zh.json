@@ -24,6 +24,7 @@
   },
   "map": {
     "locate": "回到我的位置",
+    "nearOnly": "仅显示您位置50米范围内的楼宇，移动后自动更新。",
     "geoDenied": "位置权限被拒绝。请尝试通过地址搜索。",
     "searchPlaceholder": "搜索地址或建筑名",
     "search": "搜索",
@@ -139,6 +140,7 @@
     "cancel": "取消",
     "needBuildingName": "请输入建筑名",
     "needAnyPw": "请至少输入一个密码（男卫或女卫）",
+    "tooFar": "只能登记距您当前位置50米以内的地点。",
     "list": "图钉列表",
     "total": "当前共登记 {count} 个图钉",
     "colBuilding": "建筑名",

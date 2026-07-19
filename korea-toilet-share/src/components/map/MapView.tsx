@@ -22,6 +22,7 @@ import PendingPinForm, { type PendingPinFields } from "./PendingPinForm";
 import PinTable from "./PinTable";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { fetchNearbyBuildings } from "@/lib/buildings";
+import { distanceM, REGISTER_RADIUS_M } from "@/lib/geo";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { addLocalPin } from "@/lib/mock/localPins";
 import type { LatLng } from "@/lib/map/MapProvider";
@@ -106,6 +107,14 @@ export default function MapView() {
   const [pinBusy, setPinBusy] = useState(false);
   const [pinError, setPinError] = useState<string | null>(null);
   const [tableOpen, setTableOpen] = useState(false);
+  const [rangeError, setRangeError] = useState<string | null>(null);
+
+  // 반경 초과 안내는 4초 후 자동 소멸
+  useEffect(() => {
+    if (!rangeError) return;
+    const id = setTimeout(() => setRangeError(null), 4000);
+    return () => clearTimeout(id);
+  }, [rangeError]);
 
   const locate = useCallback(() => {
     if (!("geolocation" in navigator)) {
@@ -129,36 +138,84 @@ export default function MapView() {
     locate();
   }, [locate]);
 
-  // 지도 이동/핀 등록 시 주변 빌딩 재조회 (T-105)
+  // 실시간 위치 추적 — 사용자가 이동하면 내 위치를 갱신해 주변 빌딩을 다시 조회 (15m 이상 이동 시)
+  useEffect(() => {
+    if (!("geolocation" in navigator)) return;
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        const next = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMyLocation((prev) =>
+          prev && distanceM(prev.lat, prev.lng, next.lat, next.lng) < 15 ? prev : next
+        );
+      },
+      () => undefined,
+      { enableHighAccuracy: true, maximumAge: 10_000 }
+    );
+    return () => navigator.geolocation.clearWatch(id);
+  }, []);
+
+  // 주변 빌딩 조회 (T-105)
+  // 실서비스: 내 실제 위치 반경 50m 안의 빌딩만 표시, 이동 시 자동 갱신
+  // 데모 모드: 지도 중심 기준 넓은 반경 (데모 데이터 확인용)
   useEffect(() => {
     let cancelled = false;
-    fetchNearbyBuildings(viewCenter.lat, viewCenter.lng, FETCH_RADIUS_M)
-      .then((list) => {
+    const run = async () => {
+      if (isFirebaseConfigured) {
+        if (!myLocation) {
+          if (!cancelled) setBuildings([]);
+          return;
+        }
+        const list = await fetchNearbyBuildings(
+          myLocation.lat,
+          myLocation.lng,
+          REGISTER_RADIUS_M
+        );
         if (!cancelled) setBuildings(list);
-      })
-      .catch(() => undefined);
+      } else {
+        const list = await fetchNearbyBuildings(
+          viewCenter.lat,
+          viewCenter.lng,
+          FETCH_RADIUS_M
+        );
+        if (!cancelled) setBuildings(list);
+      }
+    };
+    run().catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [viewCenter, refreshKey]);
+  }, [viewCenter, myLocation, refreshKey]);
 
   // 지도 클릭 → 대기 핀 + 역지오코딩 주소
-  const handleMapClick = useCallback((c: LatLng) => {
-    setSelected(null);
-    setPinError(null);
-    setPendingPin(c);
-    setPendingAddress(null);
-    setPendingName(null);
-    fetch(`/api/geocode?lat=${c.lat}&lng=${c.lng}`)
-      .then((res) => res.json())
-      .then((data: { address?: string; buildingName?: string | null }) => {
-        setPendingAddress(data.address || `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`);
-        setPendingName(data.buildingName ?? null);
-      })
-      .catch(() =>
-        setPendingAddress(`${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`)
-      );
-  }, []);
+  // 등록 제한: 현재 위치 반경 50m 안의 지점만 핀 등록 가능
+  const handleMapClick = useCallback(
+    (c: LatLng) => {
+      setSelected(null);
+      setPinError(null);
+      if (
+        !myLocation ||
+        distanceM(myLocation.lat, myLocation.lng, c.lat, c.lng) > REGISTER_RADIUS_M
+      ) {
+        setPendingPin(null);
+        setRangeError(tPin("tooFar"));
+        return;
+      }
+      setRangeError(null);
+      setPendingPin(c);
+      setPendingAddress(null);
+      setPendingName(null);
+      fetch(`/api/geocode?lat=${c.lat}&lng=${c.lng}`)
+        .then((res) => res.json())
+        .then((data: { address?: string; buildingName?: string | null }) => {
+          setPendingAddress(data.address || `${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`);
+          setPendingName(data.buildingName ?? null);
+        })
+        .catch(() =>
+          setPendingAddress(`${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`)
+        );
+    },
+    [myLocation, tPin]
+  );
 
   // 핀 등록 확정
   async function submitPin(fields: PendingPinFields) {
@@ -205,8 +262,9 @@ export default function MapView() {
           gpsLng: myLocation?.lng,
         }),
       });
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (!res.ok) {
-        setPinError(tReport("error"));
+        setPinError(data?.error === "TOO_FAR" ? tPin("tooFar") : tReport("error"));
         return;
       }
       setPendingPin(null);
@@ -323,6 +381,16 @@ export default function MapView() {
         {!isFirebaseConfigured && (
           <p className="rounded-md bg-blue-50/95 px-3 py-2 text-xs text-blue-800 shadow">
             {tApp("demoBanner")}
+          </p>
+        )}
+        {isFirebaseConfigured && (
+          <p className="rounded-md bg-background/90 px-3 py-1.5 text-[11px] text-muted-foreground shadow">
+            {t("nearOnly")}
+          </p>
+        )}
+        {rangeError && (
+          <p className="rounded-md bg-orange-50/95 px-3 py-2 text-xs font-medium text-orange-700 shadow">
+            {rangeError}
           </p>
         )}
       </div>
