@@ -1,14 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { Pencil, RefreshCw, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import EtiquettePledgeModal from "@/components/common/EtiquettePledgeModal";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { adminCredentials, useAdmin } from "@/lib/admin";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
-import { hasVoted, markVoted } from "@/lib/votes";
+import { hasViewed, hasVoted, markViewed, markVoted } from "@/lib/votes";
 import { toMillis, type Building, type Gender } from "@/types/building";
 
 interface Props {
@@ -26,13 +35,24 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
   const t = useTranslations("pin");
   const tReveal = useTranslations("reveal");
   const tFeedback = useTranslations("feedback");
+  const tAdmin = useTranslations("admin");
   const format = useFormatter();
   const { user, profile } = useAuth();
+  const admin = useAdmin();
 
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [counts, setCounts] = useState<Record<string, { c: number; w: number }>>({});
   const [msg, setMsg] = useState<string | null>(null);
   const [pledgeOpen, setPledgeOpen] = useState(false);
+  // 관리자 수정 다이얼로그
+  const [editing, setEditing] = useState<Building | null>(null);
+  const [editFields, setEditFields] = useState({
+    name: "",
+    storeName: "",
+    malePw: "",
+    femalePw: "",
+  });
+  const [adminBusy, setAdminBusy] = useState(false);
 
   function baseCounts(b: Building) {
     const c =
@@ -60,8 +80,79 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
     }
     // 구글시트 저장소 — 비번이 목록 데이터에 포함되어 있어 서버 호출 없이 표시
     const v = b.passwords?.[gender];
-    if (v) setRevealed((prev) => ({ ...prev, [key]: v }));
-    else setMsg(tReveal("error"));
+    if (!v) {
+      setMsg(tReveal("error"));
+      return;
+    }
+    setRevealed((prev) => ({ ...prev, [key]: v }));
+    // 열람(관심) 집계 — 등록자 포인트 산정용, 기기당 핀별 1회
+    if (!hasViewed(b.id)) {
+      markViewed(b.id);
+      user
+        .getIdToken()
+        .then((token) =>
+          fetch("/api/pins", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ id: b.id, view: true }),
+          })
+        )
+        .catch(() => undefined);
+    }
+  }
+
+  // ── 관리자: 삭제/수정 ──
+  async function adminDelete(b: Building) {
+    if (!window.confirm(tAdmin("deleteConfirm"))) return;
+    setAdminBusy(true);
+    try {
+      const res = await fetch("/api/pins", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: b.id, ...adminCredentials() }),
+      });
+      if (res.ok) onRefresh?.();
+      else setMsg(tAdmin("error"));
+    } catch {
+      setMsg(tAdmin("error"));
+    } finally {
+      setAdminBusy(false);
+    }
+  }
+
+  function openEdit(b: Building) {
+    setEditing(b);
+    setEditFields({
+      name: b.name,
+      storeName: b.storeName ?? "",
+      malePw: b.passwords?.male ?? "",
+      femalePw: b.passwords?.female ?? "",
+    });
+  }
+
+  async function adminSave() {
+    if (!editing) return;
+    setAdminBusy(true);
+    try {
+      const res = await fetch("/api/pins", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editing.id, fields: editFields, ...adminCredentials() }),
+      });
+      if (res.ok) {
+        setEditing(null);
+        onRefresh?.();
+      } else {
+        setMsg(tAdmin("error"));
+      }
+    } catch {
+      setMsg(tAdmin("error"));
+    } finally {
+      setAdminBusy(false);
+    }
   }
 
   async function feedback(b: Building, result: "correct" | "wrong") {
@@ -180,12 +271,18 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
               <th className="px-3 py-2 text-left font-medium">{t("colBy")}</th>
               <th className="px-3 py-2 text-center font-medium">{t("colCorrect")}</th>
               <th className="px-3 py-2 text-center font-medium">{t("colWrong")}</th>
+              {admin && (
+                <th className="px-3 py-2 text-center font-medium">{tAdmin("manage")}</th>
+              )}
             </tr>
           </thead>
           <tbody>
             {buildings.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-muted-foreground">
+                <td
+                  colSpan={admin ? 9 : 8}
+                  className="px-3 py-8 text-center text-muted-foreground"
+                >
                   {t("empty")}
                 </td>
               </tr>
@@ -241,6 +338,32 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
                         {cnt.w}
                       </button>
                     </td>
+                    {admin && (
+                      <td className="whitespace-nowrap px-2 py-2 text-center">
+                        <button
+                          className="mr-1 inline-flex rounded border p-1 text-muted-foreground hover:bg-accent"
+                          title={tAdmin("edit")}
+                          disabled={adminBusy}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEdit(b);
+                          }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          className="inline-flex rounded border border-red-200 p-1 text-red-600 hover:bg-red-50"
+                          title={tAdmin("delete")}
+                          disabled={adminBusy}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            adminDelete(b);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 );
               })
@@ -253,6 +376,52 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
         onOpenChange={setPledgeOpen}
         onAgreed={() => setMsg(null)}
       />
+
+      {/* 관리자 — 핀 수정 다이얼로그 */}
+      <Dialog open={editing != null} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tAdmin("edit")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              placeholder={t("buildingName")}
+              value={editFields.name}
+              onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))}
+            />
+            <Input
+              placeholder={t("storeName")}
+              value={editFields.storeName}
+              onChange={(e) => setEditFields((f) => ({ ...f, storeName: e.target.value }))}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                placeholder={t("malePw")}
+                value={editFields.malePw}
+                onChange={(e) => setEditFields((f) => ({ ...f, malePw: e.target.value }))}
+              />
+              <Input
+                placeholder={t("femalePw")}
+                value={editFields.femalePw}
+                onChange={(e) => setEditFields((f) => ({ ...f, femalePw: e.target.value }))}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setEditing(null)}
+                disabled={adminBusy}
+              >
+                {t("cancel")}
+              </Button>
+              <Button className="flex-1" onClick={adminSave} disabled={adminBusy}>
+                {tAdmin("save")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

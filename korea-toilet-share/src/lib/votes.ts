@@ -20,3 +20,22 @@ export function markVoted(pinId: string): void {
     /* ignore */
   }
 }
+
+/** 열람(관심) 카운트 — 기기당 핀별 1회만 집계해 부풀리기 방지 */
+const VIEW_KEY = (pinId: string) => `ktk-viewed:${pinId}`;
+
+export function hasViewed(pinId: string): boolean {
+  try {
+    return localStorage.getItem(VIEW_KEY(pinId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function markViewed(pinId: string): void {
+  try {
+    localStorage.setItem(VIEW_KEY(pinId), "1");
+  } catch {
+    /* ignore */
+  }
+}

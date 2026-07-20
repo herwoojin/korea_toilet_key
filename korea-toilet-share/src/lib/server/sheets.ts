@@ -20,6 +20,7 @@ export interface SheetPin {
   uid: string;
   correctCount: number;
   wrongCount: number;
+  views?: number;
 }
 
 /**
@@ -156,5 +157,7 @@ export function rowToBuilding(r: SheetPin): Building {
       female: toilet(femalePw, !malePw),
     },
     passwords,
+    views: Number(r.views) || 0,
+    createdByUid: String(r.uid || "") || undefined,
   };
 }

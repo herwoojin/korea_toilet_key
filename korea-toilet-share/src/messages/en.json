@@ -15,7 +15,7 @@
   "tabs": {
     "map": "Map",
     "live": "Live",
-    "report": "Report",
+    "report": "Share",
     "my": "My"
   },
   "header": {
@@ -31,7 +31,8 @@
     "search": "Search",
     "searchNoKey": "Address search is unavailable because the Kakao REST API key is not set.",
     "noResults": "No results found",
-    "detail": "View details"
+    "detail": "View details",
+    "roadview": "Road View"
   },
   "building": {
     "male": "Men's restroom",
@@ -122,7 +123,8 @@
     "nickname": "Nickname",
     "nicknameDesc": "Only your nickname is shown to other users and owners.",
     "save": "Save",
-    "saved": "Saved!"
+    "saved": "Saved!",
+    "pointsDesc": "Your pins' 👍 votes ×10 + views ×1"
   },
   "culture": {
     "title": "Korea's Restroom Passcode Culture",
@@ -194,5 +196,21 @@
     "uptime": "Uptime",
     "offline": "Server status unavailable",
     "retry": "Retry"
+  },
+  "admin": {
+    "title": "Admin",
+    "loginDesc": "Sign in with the admin account.",
+    "activeDesc": "Admin mode is on. You can edit/delete pins in the list.",
+    "id": "ID",
+    "pw": "Password",
+    "login": "Sign in",
+    "logout": "Turn off admin mode",
+    "wrong": "Incorrect ID or password",
+    "manage": "Manage",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this pin? This cannot be undone.",
+    "save": "Save",
+    "error": "Admin action failed"
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, Map, PenLine, User } from "lucide-react";
+import { Activity, Map, Share2, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
@@ -9,10 +9,11 @@ export default function TabBar() {
   const t = useTranslations("tabs");
   const pathname = usePathname();
 
+  // 순서: 공유하기 - 지도 - 실시간 - 내정보 (2026-07-20 요청)
   const tabs = [
+    { href: "/report", label: t("report"), icon: Share2 },
     { href: "/", label: t("map"), icon: Map },
     { href: "/live", label: t("live"), icon: Activity },
-    { href: "/report", label: t("report"), icon: PenLine },
     { href: "/my", label: t("my"), icon: User },
   ] as const;
 

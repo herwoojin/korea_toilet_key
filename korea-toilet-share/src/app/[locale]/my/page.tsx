@@ -29,6 +29,15 @@ interface ViewLogRow {
   viewedAt: unknown;
 }
 
+interface PinRow {
+  createdByUid?: string;
+  views?: number;
+  toilets?: {
+    male?: { correctCount?: number };
+    female?: { correctCount?: number };
+  };
+}
+
 /** 내 정보 — 포인트/무료 열람권/열람 기록 (T-402, T-405의 기반) */
 export default function MyPage() {
   const t = useTranslations("my");
@@ -38,6 +47,7 @@ export default function MyPage() {
 
   const [loginOpen, setLoginOpen] = useState(false);
   const [logs, setLogs] = useState<ViewLogRow[]>([]);
+  const [myPoints, setMyPoints] = useState<number | null>(null);
   const [nickname, setNickname] = useState("");
   const [savingNick, setSavingNick] = useState(false);
   const [savedNick, setSavedNick] = useState(false);
@@ -61,6 +71,28 @@ export default function MyPage() {
       setSavingNick(false);
     }
   }
+
+  // 포인트: 내가 등록한 핀이 받은 맞아요 ×10 + 열람 ×1 (시트 데이터에서 계산)
+  useEffect(() => {
+    if (!configured || !user) return;
+    fetch("/api/pins", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { buildings?: PinRow[] } | null) => {
+        if (!d?.buildings) return;
+        const mine = d.buildings.filter((b) => b.createdByUid === user.uid);
+        const pts = mine.reduce(
+          (sum, b) =>
+            sum +
+            ((b.toilets?.male?.correctCount ?? 0) +
+              (b.toilets?.female?.correctCount ?? 0)) *
+              10 +
+            (b.views ?? 0),
+          0
+        );
+        setMyPoints(pts);
+      })
+      .catch(() => undefined);
+  }, [configured, user]);
 
   useEffect(() => {
     if (!configured || !user) return;
@@ -112,7 +144,10 @@ export default function MyPage() {
             <CardTitle className="text-sm text-muted-foreground">{t("points")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-primary">{profile?.points ?? 0}</p>
+            <p className="text-2xl font-bold text-primary">{myPoints ?? 0}</p>
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              {t("pointsDesc")}
+            </p>
           </CardContent>
         </Card>
         <Card className={glassCard}>

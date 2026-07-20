@@ -15,7 +15,7 @@
   "tabs": {
     "map": "지도",
     "live": "실시간",
-    "report": "제보",
+    "report": "공유하기",
     "my": "내정보"
   },
   "header": {
@@ -31,7 +31,8 @@
     "search": "검색",
     "searchNoKey": "카카오 REST API 키가 설정되지 않아 주소 검색을 사용할 수 없습니다.",
     "noResults": "검색 결과가 없습니다",
-    "detail": "상세 보기"
+    "detail": "상세 보기",
+    "roadview": "로드뷰"
   },
   "building": {
     "male": "남자 화장실",
@@ -122,7 +123,8 @@
     "nickname": "닉네임",
     "nicknameDesc": "다른 사용자와 오너에게는 닉네임만 표시됩니다.",
     "save": "저장",
-    "saved": "저장되었습니다!"
+    "saved": "저장되었습니다!",
+    "pointsDesc": "내가 등록한 핀이 받은 맞아요 ×10 + 열람 ×1"
   },
   "culture": {
     "title": "한국의 화장실 비밀번호 문화",
@@ -194,5 +196,21 @@
     "uptime": "업타임",
     "offline": "서버 상태 확인 불가",
     "retry": "다시 시도"
+  },
+  "admin": {
+    "title": "관리자",
+    "loginDesc": "관리자 계정으로 로그인하세요.",
+    "activeDesc": "관리자 모드가 켜져 있습니다. 핀 목록에서 수정·삭제할 수 있어요.",
+    "id": "아이디",
+    "pw": "비밀번호",
+    "login": "로그인",
+    "logout": "관리자 모드 해제",
+    "wrong": "아이디 또는 비밀번호가 올바르지 않습니다",
+    "manage": "관리",
+    "edit": "수정",
+    "delete": "삭제",
+    "deleteConfirm": "이 핀을 삭제할까요? 되돌릴 수 없습니다.",
+    "save": "저장",
+    "error": "관리자 작업에 실패했습니다"
   }
 }

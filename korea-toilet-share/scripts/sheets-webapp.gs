@@ -20,7 +20,10 @@ var HEADERS = [
   "id", "createdAt", "name", "storeName", "address", "lat", "lng",
   "malePw", "femalePw", "nickname", "uid", "correctCount", "wrongCount",
   "correctUids", "wrongUids", // 1인 1회 투표 기록 (uid 콤마 목록)
+  "views", // 비밀번호 열람(관심) 클릭 수 — 포인트 산정용
 ];
+// 수정 가능 필드 → 1-based 컬럼 번호
+var EDITABLE = { name: 3, storeName: 4, malePw: 8, femalePw: 9 };
 
 function getSheet_() {
   var sh = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
@@ -74,9 +77,53 @@ function doPost(e) {
         id, new Date().toISOString(),
         p.name || "", p.storeName || "", p.address || "",
         p.lat, p.lng, malePw ? "'" + malePw : "", femalePw ? "'" + femalePw : "",
-        p.nickname || "", p.uid || "", 0, 0, "", "",
+        p.nickname || "", p.uid || "", 0, 0, "", "", 0,
       ]);
       return json_({ ok: true, id: id });
+    }
+
+    // 비밀번호 열람(관심) 클릭 — views 16열 증가
+    if (body.action === "view") {
+      var vrows = sh.getDataRange().getValues();
+      for (var v = 1; v < vrows.length; v++) {
+        if (String(vrows[v][0]) === String(body.id)) {
+          sh.getRange(v + 1, 16).setValue(Number(vrows[v][15] || 0) + 1);
+          return json_({ ok: true });
+        }
+      }
+      return json_({ ok: false, error: "NOT_FOUND" });
+    }
+
+    // 관리자 — 행 삭제
+    if (body.action === "delete") {
+      var drows = sh.getDataRange().getValues();
+      for (var d = 1; d < drows.length; d++) {
+        if (String(drows[d][0]) === String(body.id)) {
+          sh.deleteRow(d + 1);
+          return json_({ ok: true });
+        }
+      }
+      return json_({ ok: false, error: "NOT_FOUND" });
+    }
+
+    // 관리자 — 필드 수정 (name/storeName/malePw/femalePw)
+    if (body.action === "update") {
+      var urows = sh.getDataRange().getValues();
+      for (var u = 1; u < urows.length; u++) {
+        if (String(urows[u][0]) === String(body.id)) {
+          var fields = body.fields || {};
+          for (var key in EDITABLE) {
+            if (fields[key] !== undefined) {
+              var val = String(fields[key]);
+              // 비번은 텍스트 강제 (0000 보존)
+              if ((key === "malePw" || key === "femalePw") && val) val = "'" + val;
+              sh.getRange(u + 1, EDITABLE[key]).setValue(val);
+            }
+          }
+          return json_({ ok: true });
+        }
+      }
+      return json_({ ok: false, error: "NOT_FOUND" });
     }
 
     if (body.action === "feedback") {

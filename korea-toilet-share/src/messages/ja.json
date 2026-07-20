@@ -15,7 +15,7 @@
   "tabs": {
     "map": "地図",
     "live": "ライブ",
-    "report": "投稿",
+    "report": "共有する",
     "my": "マイ"
   },
   "header": {
@@ -31,7 +31,8 @@
     "search": "検索",
     "searchNoKey": "Kakao REST APIキーが未設定のため、住所検索は利用できません。",
     "noResults": "検索結果がありません",
-    "detail": "詳細を見る"
+    "detail": "詳細を見る",
+    "roadview": "ロードビュー"
   },
   "building": {
     "male": "男性トイレ",
@@ -122,7 +123,8 @@
     "nickname": "ニックネーム",
     "nicknameDesc": "他のユーザーとオーナーにはニックネームのみ表示されます。",
     "save": "保存",
-    "saved": "保存しました！"
+    "saved": "保存しました！",
+    "pointsDesc": "登録したピンが受けた👍 ×10 + 閲覧 ×1"
   },
   "culture": {
     "title": "韓国のトイレ暗証番号文化",
@@ -194,5 +196,21 @@
     "uptime": "稼働時間",
     "offline": "サーバー状態を取得できません",
     "retry": "再試行"
+  },
+  "admin": {
+    "title": "管理者",
+    "loginDesc": "管理者アカウントでログインしてください。",
+    "activeDesc": "管理者モードがオンです。一覧から編集・削除できます。",
+    "id": "ID",
+    "pw": "パスワード",
+    "login": "ログイン",
+    "logout": "管理者モード解除",
+    "wrong": "IDまたはパスワードが正しくありません",
+    "manage": "管理",
+    "edit": "編集",
+    "delete": "削除",
+    "deleteConfirm": "このピンを削除しますか？元に戻せません。",
+    "save": "保存",
+    "error": "管理操作に失敗しました"
   }
 }

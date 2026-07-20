@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { getClientAuth } from "@/lib/firebase/client";
+import AdminButton from "./AdminButton";
 import LanguageSwitcher from "./LanguageSwitcher";
 import LoginSheet from "./LoginSheet";
 
@@ -66,6 +67,7 @@ export default function Header() {
             {t("login")}
           </Button>
         )}
+        <AdminButton />
       </div>
       <LoginSheet open={loginOpen} onOpenChange={setLoginOpen} />
     </header>

@@ -16,6 +16,7 @@ import LoginSheet from "@/components/common/LoginSheet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
+import { hasViewed, markViewed } from "@/lib/votes";
 import type { Building, Gender } from "@/types/building";
 import FeedbackButtons from "./FeedbackButtons";
 
@@ -82,6 +83,23 @@ export default function RevealButton({ building, gender }: Props) {
       }
       setRevealed({ password: pw, demo: false });
       setConfirmOpen(false);
+      // 열람(관심) 집계 — 등록자 포인트 산정용, 기기당 핀별 1회
+      if (user && !hasViewed(building.id)) {
+        markViewed(building.id);
+        user
+          .getIdToken()
+          .then((token) =>
+            fetch("/api/pins", {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ id: building.id, view: true }),
+            })
+          )
+          .catch(() => undefined);
+      }
     } finally {
       setBusy(false);
     }

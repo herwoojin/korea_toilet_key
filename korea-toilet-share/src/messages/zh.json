@@ -15,7 +15,7 @@
   "tabs": {
     "map": "地图",
     "live": "实时",
-    "report": "提交",
+    "report": "共享",
     "my": "我的"
   },
   "header": {
@@ -31,7 +31,8 @@
     "search": "搜索",
     "searchNoKey": "未设置 Kakao REST API 密钥，无法使用地址搜索。",
     "noResults": "没有搜索结果",
-    "detail": "查看详情"
+    "detail": "查看详情",
+    "roadview": "街景"
   },
   "building": {
     "male": "男卫生间",
@@ -122,7 +123,8 @@
     "nickname": "昵称",
     "nicknameDesc": "其他用户和业主只会看到您的昵称。",
     "save": "保存",
-    "saved": "已保存！"
+    "saved": "已保存！",
+    "pointsDesc": "我登记的信息获得的👍 ×10 + 查看 ×1"
   },
   "culture": {
     "title": "韩国的卫生间密码文化",
@@ -194,5 +196,21 @@
     "uptime": "运行时间",
     "offline": "无法获取服务器状态",
     "retry": "重试"
+  },
+  "admin": {
+    "title": "管理员",
+    "loginDesc": "请使用管理员账号登录。",
+    "activeDesc": "管理员模式已开启，可在列表中修改/删除。",
+    "id": "账号",
+    "pw": "密码",
+    "login": "登录",
+    "logout": "关闭管理员模式",
+    "wrong": "账号或密码不正确",
+    "manage": "管理",
+    "edit": "修改",
+    "delete": "删除",
+    "deleteConfirm": "确定删除此信息？无法恢复。",
+    "save": "保存",
+    "error": "管理操作失败"
   }
 }

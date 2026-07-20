@@ -27,6 +27,10 @@ export interface Building {
   toilets: { male?: ToiletInfo; female?: ToiletInfo };
   /** 구글시트 저장소 모드 — 비번이 목록 응답에 포함됨 (시트 자체가 공유 문서) */
   passwords?: { male?: string; female?: string };
+  /** 비밀번호 열람(관심) 클릭 수 — 포인트 산정용 */
+  views?: number;
+  /** 등록자 uid — 내 핀 포인트 계산용 */
+  createdByUid?: string;
   ownerId?: string;
   ownerVerified?: boolean;
   isPublicByOwner?: boolean;

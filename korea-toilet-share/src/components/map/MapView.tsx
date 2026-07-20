@@ -11,12 +11,11 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { List, LocateFixed, Search, X } from "lucide-react";
+import { Eye, List, LocateFixed, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import ConfidenceBadge from "@/components/building/ConfidenceBadge";
 import SyncOverlay from "@/components/common/SyncOverlay";
 import PendingPinForm, { type PendingPinFields } from "./PendingPinForm";
@@ -47,13 +46,6 @@ const pendingIcon = L.divIcon({
   iconSize: [34, 44],
   iconAnchor: [17, 44],
 });
-
-interface GeocodeResult {
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-}
 
 function MapEvents({
   onMoved,
@@ -96,9 +88,6 @@ export default function MapView() {
   const [geoDenied, setGeoDenied] = useState(false);
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [selected, setSelected] = useState<Building | null>(null);
-  const [q, setQ] = useState("");
-  const [results, setResults] = useState<GeocodeResult[]>([]);
-  const [searchError, setSearchError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // 지도 클릭 핀 등록 상태
@@ -302,27 +291,6 @@ export default function MapView() {
     }
   }
 
-  async function search() {
-    setSearchError(null);
-    setResults([]);
-    if (!q.trim()) return;
-    try {
-      const res = await fetch(`/api/geocode?q=${encodeURIComponent(q.trim())}`);
-      if (res.status === 503) {
-        setSearchError(t("searchNoKey"));
-        return;
-      }
-      const data = (await res.json()) as { results?: GeocodeResult[] };
-      if (!data.results?.length) {
-        setSearchError(t("noResults"));
-        return;
-      }
-      setResults(data.results);
-    } catch {
-      setSearchError(t("noResults"));
-    }
-  }
-
   const markers = useMemo(
     () =>
       buildings.map((b) => (
@@ -365,42 +333,8 @@ export default function MapView() {
         )}
       </MapContainer>
 
-      {/* 상단: 검색 + 배너 */}
+      {/* 상단: 상태 배너 (주소 검색창은 제거됨 — 2026-07-20 요청) */}
       <div className="absolute inset-x-3 top-3 z-[1001] space-y-2">
-        <div className="flex gap-2">
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && search()}
-            placeholder={t("searchPlaceholder")}
-            className="bg-background/95 shadow"
-          />
-          <Button onClick={search} size="icon" className="shrink-0 shadow" aria-label={t("search")}>
-            <Search className="h-4 w-4" />
-          </Button>
-        </div>
-        {results.length > 0 && (
-          <div className="max-h-52 overflow-auto rounded-md border bg-background shadow">
-            {results.map((r, i) => (
-              <button
-                key={i}
-                className="block w-full border-b px-3 py-2 text-left text-sm last:border-0 hover:bg-accent"
-                onClick={() => {
-                  setCenter({ lat: r.lat, lng: r.lng });
-                  setResults([]);
-                }}
-              >
-                <span className="font-medium">{r.name}</span>
-                <span className="block text-xs text-muted-foreground">{r.address}</span>
-              </button>
-            ))}
-          </div>
-        )}
-        {searchError && (
-          <p className="rounded-md bg-background/95 px-3 py-2 text-xs text-destructive shadow">
-            {searchError}
-          </p>
-        )}
         {geoDenied && (
           <p className="rounded-md bg-amber-50/95 px-3 py-2 text-xs text-amber-800 shadow">
             {t("geoDenied")}
@@ -497,9 +431,22 @@ export default function MapView() {
               );
             })}
           </div>
-          <Button asChild className="mt-3 w-full">
-            <Link href={`/building/${selected.id}`}>{t("detail")}</Link>
-          </Button>
+          <div className="mt-3 flex gap-2">
+            {/* 네이버 지도 거리뷰 레이어를 핀 좌표에서 바로 연다 */}
+            <Button asChild variant="outline" className="flex-1">
+              <a
+                href={`https://map.naver.com/v5/?c=${selected.lng},${selected.lat},18,0,0,0,dh`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Eye className="h-4 w-4" />
+                {t("roadview")}
+              </a>
+            </Button>
+            <Button asChild className="flex-1">
+              <Link href={`/building/${selected.id}`}>{t("detail")}</Link>
+            </Button>
+          </div>
         </div>
       )}
 
