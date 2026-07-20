@@ -63,7 +63,9 @@
     "error": "查看失败，请稍后重试。",
     "needSetup": "服务器尚未配置 Firebase Admin 密钥。",
     "noCredit": "免费查看次数和积分不足。通过提交信息来赚取积分吧！",
-    "freeLeft": "剩余免费查看 {count} 次"
+    "freeLeft": "剩余免费查看 {count} 次",
+    "creditUsed": "已使用1张查看券（剩余{count}张）",
+    "noCreditMonthly": "查看券已用完。下个月将免费补充5张。"
   },
   "etiquette": {
     "title": "使用礼仪承诺",
@@ -124,7 +126,8 @@
     "nicknameDesc": "其他用户和业主只会看到您的昵称。",
     "save": "保存",
     "saved": "已保存！",
-    "pointsDesc": "我登记的信息获得的👍 ×10 + 查看 ×1"
+    "pointsDesc": "我登记的信息获得的👍 ×10 + 查看 ×1",
+    "pointsCalculating": "正在计算积分…"
   },
   "culture": {
     "title": "韩国的卫生间密码文化",
@@ -183,11 +186,18 @@
     "live": "LIVE",
     "title": "实时登记动态",
     "desc": "新登记的卫生间信息会在此共享。与Google表格同步（可能延迟几秒），每30秒自动刷新。",
-    "colUser": "用户",
+    "colUser": "登记者",
     "colBuilding": "楼宇",
     "colToilet": "卫生间",
     "colTime": "时间",
-    "empty": "还没有登记信息"
+    "empty": "还没有登记信息",
+    "filterBuilding": "搜索建筑",
+    "filterUser": "搜索登记者",
+    "filterAll": "全部",
+    "rankTitle": "积分排行",
+    "rankDesc": "👍 ×10 + 查看 ×1",
+    "colRank": "排名",
+    "colPoints": "积分"
   },
   "battery": {
     "title": "服务器容量",

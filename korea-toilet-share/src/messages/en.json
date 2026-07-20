@@ -63,7 +63,9 @@
     "error": "Failed to reveal. Please try again later.",
     "needSetup": "The Firebase Admin key is not configured on the server yet.",
     "noCredit": "You are out of free reveals and points. Contribute reports to earn points!",
-    "freeLeft": "{count} free reveals left"
+    "freeLeft": "{count} free reveals left",
+    "creditUsed": "1 pass used ({count} left)",
+    "noCreditMonthly": "You're out of passes. 5 free passes arrive next month."
   },
   "etiquette": {
     "title": "Etiquette Pledge",
@@ -124,7 +126,8 @@
     "nicknameDesc": "Only your nickname is shown to other users and owners.",
     "save": "Save",
     "saved": "Saved!",
-    "pointsDesc": "Your pins' 👍 votes ×10 + views ×1"
+    "pointsDesc": "Your pins' 👍 votes ×10 + views ×1",
+    "pointsCalculating": "Calculating points…"
   },
   "culture": {
     "title": "Korea's Restroom Passcode Culture",
@@ -183,11 +186,18 @@
     "live": "LIVE",
     "title": "Live pin registrations",
     "desc": "Newly registered toilet pins are shared here. Synced with Google Sheets (a few seconds of delay), auto-refreshes every 30s.",
-    "colUser": "User",
+    "colUser": "Registrant",
     "colBuilding": "Building",
     "colToilet": "Restroom",
     "colTime": "Time",
-    "empty": "No pins registered yet"
+    "empty": "No pins registered yet",
+    "filterBuilding": "Search building",
+    "filterUser": "Search registrant",
+    "filterAll": "All",
+    "rankTitle": "Points ranking",
+    "rankDesc": "👍 ×10 + views ×1",
+    "colRank": "Rank",
+    "colPoints": "Points"
   },
   "battery": {
     "title": "Server capacity",

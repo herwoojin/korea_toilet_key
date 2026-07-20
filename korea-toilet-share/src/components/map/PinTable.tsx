@@ -17,6 +17,7 @@ import { adminCredentials, useAdmin } from "@/lib/admin";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
+import { chargeRevealCredit, hasRevealCharged, markRevealCharged } from "@/lib/reveals";
 import { hasViewed, hasVoted, markViewed, markVoted } from "@/lib/votes";
 import { toMillis, type Building, type Gender } from "@/types/building";
 
@@ -78,6 +79,12 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
       setPledgeOpen(true);
       return;
     }
+    // 열람권 확인 — 처음 보는 핀·성별이면 1개 차감 (기기 기준 중복 차감 방지)
+    const charged = hasRevealCharged(b.id, gender);
+    if (!charged && (profile?.freeReveals ?? 0) <= 0) {
+      setMsg(tReveal("noCreditMonthly"));
+      return;
+    }
     // 구글시트 저장소 — 비번이 목록 데이터에 포함되어 있어 서버 호출 없이 표시
     const v = b.passwords?.[gender];
     if (!v) {
@@ -85,6 +92,11 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
       return;
     }
     setRevealed((prev) => ({ ...prev, [key]: v }));
+    if (!charged) {
+      markRevealCharged(b.id, gender);
+      chargeRevealCredit(user.uid).catch(() => undefined);
+      setMsg(tReveal("creditUsed", { count: Math.max((profile?.freeReveals ?? 1) - 1, 0) }));
+    }
     // 열람(관심) 집계 — 등록자 포인트 산정용, 기기당 핀별 1회
     if (!hasViewed(b.id)) {
       markViewed(b.id);

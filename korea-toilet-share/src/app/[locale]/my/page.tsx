@@ -144,7 +144,13 @@ export default function MyPage() {
             <CardTitle className="text-sm text-muted-foreground">{t("points")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-primary">{myPoints ?? 0}</p>
+            {myPoints == null ? (
+              <p className="animate-pulse text-sm text-muted-foreground">
+                {t("pointsCalculating")}
+              </p>
+            ) : (
+              <p className="text-2xl font-bold text-primary">{myPoints}</p>
+            )}
             <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
               {t("pointsDesc")}
             </p>

@@ -16,6 +16,7 @@ import LoginSheet from "@/components/common/LoginSheet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
+import { chargeRevealCredit, hasRevealCharged, markRevealCharged } from "@/lib/reveals";
 import { hasViewed, markViewed } from "@/lib/votes";
 import type { Building, Gender } from "@/types/building";
 import FeedbackButtons from "./FeedbackButtons";
@@ -44,6 +45,7 @@ export default function RevealButton({ building, gender }: Props) {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [creditNote, setCreditNote] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<Revealed | null>(null);
 
   function start() {
@@ -75,6 +77,13 @@ export default function RevealButton({ building, gender }: Props) {
         setConfirmOpen(false);
         return;
       }
+      // 열람권 확인 — 처음 보는 핀·성별이면 1개 차감
+      const charged = hasRevealCharged(building.id, gender);
+      if (!charged && (profile?.freeReveals ?? 0) <= 0) {
+        setError(t("noCreditMonthly"));
+        setConfirmOpen(false);
+        return;
+      }
       // 구글시트 저장소 — 비번이 핀 데이터에 포함되어 있어 서버 호출 불필요
       const pw = building.passwords?.[gender];
       if (!pw) {
@@ -83,6 +92,13 @@ export default function RevealButton({ building, gender }: Props) {
       }
       setRevealed({ password: pw, demo: false });
       setConfirmOpen(false);
+      if (!charged && user) {
+        markRevealCharged(building.id, gender);
+        chargeRevealCredit(user.uid).catch(() => undefined);
+        setCreditNote(
+          t("creditUsed", { count: Math.max((profile?.freeReveals ?? 1) - 1, 0) })
+        );
+      }
       // 열람(관심) 집계 — 등록자 포인트 산정용, 기기당 핀별 1회
       if (user && !hasViewed(building.id)) {
         markViewed(building.id);
@@ -114,6 +130,9 @@ export default function RevealButton({ building, gender }: Props) {
           </p>
           {revealed.demo && (
             <p className="mt-1 text-xs text-muted-foreground">{t("demo")}</p>
+          )}
+          {creditNote && (
+            <p className="mt-1 text-xs text-amber-700">{creditNote}</p>
           )}
         </div>
         <FeedbackButtons buildingId={building.id} demo={revealed.demo} />

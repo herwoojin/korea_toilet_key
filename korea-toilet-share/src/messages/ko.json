@@ -63,7 +63,9 @@
     "error": "열람에 실패했습니다. 잠시 후 다시 시도해주세요.",
     "needSetup": "서버에 Firebase Admin 키가 아직 설정되지 않았습니다.",
     "noCredit": "무료 열람권과 포인트가 부족합니다. 제보로 포인트를 모아보세요!",
-    "freeLeft": "남은 무료 열람 {count}회"
+    "freeLeft": "남은 무료 열람 {count}회",
+    "creditUsed": "열람권 1개가 사용되었습니다 (남은 열람권 {count}개)",
+    "noCreditMonthly": "열람권이 모두 소진되었습니다. 다음 달에 무료 5개가 충전됩니다."
   },
   "etiquette": {
     "title": "이용 에티켓 서약",
@@ -124,7 +126,8 @@
     "nicknameDesc": "다른 사용자와 오너에게는 닉네임만 표시됩니다.",
     "save": "저장",
     "saved": "저장되었습니다!",
-    "pointsDesc": "내가 등록한 핀이 받은 맞아요 ×10 + 열람 ×1"
+    "pointsDesc": "내가 등록한 핀이 받은 맞아요 ×10 + 열람 ×1",
+    "pointsCalculating": "포인트를 계산중입니다…"
   },
   "culture": {
     "title": "한국의 화장실 비밀번호 문화",
@@ -183,11 +186,18 @@
     "live": "LIVE",
     "title": "실시간 핀 등록 현황",
     "desc": "새로 등록된 화장실 핀이 공유됩니다. 구글시트와 연동되어 반영까지 몇 초 걸릴 수 있고, 30초마다 자동 갱신됩니다.",
-    "colUser": "사용자",
+    "colUser": "등록자",
     "colBuilding": "빌딩",
     "colToilet": "구분",
     "colTime": "시각",
-    "empty": "아직 등록된 핀이 없습니다"
+    "empty": "아직 등록된 핀이 없습니다",
+    "filterBuilding": "빌딩 검색",
+    "filterUser": "등록자 검색",
+    "filterAll": "전체",
+    "rankTitle": "포인트 랭킹",
+    "rankDesc": "맞아요 ×10 + 열람 ×1",
+    "colRank": "순위",
+    "colPoints": "포인트"
   },
   "battery": {
     "title": "서버 용량",

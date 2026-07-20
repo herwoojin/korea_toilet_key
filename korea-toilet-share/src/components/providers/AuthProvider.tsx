@@ -8,7 +8,14 @@ import {
   type ReactNode,
 } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { doc, getDoc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { getClientAuth, getDb, isFirebaseConfigured } from "@/lib/firebase/client";
 
 export interface UserProfile {
@@ -18,9 +25,16 @@ export interface UserProfile {
   trustScore: number;
   points: number;
   freeReveals: number;
+  /** 열람권이 마지막으로 갱신된 달 (YYYY-MM) — 매달 5개로 리셋 */
+  freeRevealsMonth?: string;
   etiquetteAgreedAt?: unknown;
   locale?: string;
 }
+
+/** 열람권 정책: 최초 로그인 10개, 매달 5개로 갱신 */
+export const INITIAL_REVEALS = 10;
+export const MONTHLY_REVEALS = 5;
+export const monthKey = () => new Date().toISOString().slice(0, 7);
 
 interface AuthContextValue {
   user: User | null;
@@ -52,7 +66,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(null);
         return;
       }
-      // 최초 로그인 시 users 문서 생성 (ERD §2.1, freeReveals=3)
+      // 최초 로그인 시 users 문서 생성 — 열람권 10개 지급
       const ref = doc(getDb(), "users", u.uid);
       const snap = await getDoc(ref);
       if (!snap.exists()) {
@@ -63,11 +77,18 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
           phoneVerified: false,
           trustScore: 50,
           points: 0,
-          freeReveals: 3,
+          freeReveals: INITIAL_REVEALS,
+          freeRevealsMonth: monthKey(),
           locale: "ko",
           createdAt: serverTimestamp(),
           lastActiveAt: serverTimestamp(),
         });
+      } else if (snap.data().freeRevealsMonth !== monthKey()) {
+        // 매달 열람권 갱신 — 무료 5개
+        await updateDoc(ref, {
+          freeReveals: MONTHLY_REVEALS,
+          freeRevealsMonth: monthKey(),
+        }).catch(() => undefined);
       }
     });
     return unsub;

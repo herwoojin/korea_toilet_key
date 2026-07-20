@@ -63,7 +63,9 @@
     "error": "表示に失敗しました。しばらくしてからもう一度お試しください。",
     "needSetup": "サーバーにFirebase Adminキーがまだ設定されていません。",
     "noCredit": "無料閲覧権とポイントが不足しています。投稿でポイントを貯めましょう！",
-    "freeLeft": "残り無料閲覧{count}回"
+    "freeLeft": "残り無料閲覧{count}回",
+    "creditUsed": "閲覧券を1枚使用しました（残り{count}枚）",
+    "noCreditMonthly": "閲覧券がなくなりました。来月に無料5枚が補充されます。"
   },
   "etiquette": {
     "title": "利用マナー誓約",
@@ -124,7 +126,8 @@
     "nicknameDesc": "他のユーザーとオーナーにはニックネームのみ表示されます。",
     "save": "保存",
     "saved": "保存しました！",
-    "pointsDesc": "登録したピンが受けた👍 ×10 + 閲覧 ×1"
+    "pointsDesc": "登録したピンが受けた👍 ×10 + 閲覧 ×1",
+    "pointsCalculating": "ポイントを計算中です…"
   },
   "culture": {
     "title": "韓国のトイレ暗証番号文化",
@@ -183,11 +186,18 @@
     "live": "LIVE",
     "title": "リアルタイム登録状況",
     "desc": "新しく登録されたトイレのピンが共有されます。シート連携のため数秒の遅延があり、30秒ごとに自動更新されます。",
-    "colUser": "ユーザー",
+    "colUser": "登録者",
     "colBuilding": "ビル",
     "colToilet": "トイレ",
     "colTime": "時刻",
-    "empty": "まだ登録されたピンはありません"
+    "empty": "まだ登録されたピンはありません",
+    "filterBuilding": "建物を検索",
+    "filterUser": "登録者を検索",
+    "filterAll": "すべて",
+    "rankTitle": "ポイントランキング",
+    "rankDesc": "👍 ×10 + 閲覧 ×1",
+    "colRank": "順位",
+    "colPoints": "ポイント"
   },
   "battery": {
     "title": "サーバー容量",
