@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import SyncOverlay from "@/components/common/SyncOverlay";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_BUILDINGS } from "@/lib/mock/buildings";
 import { cn } from "@/lib/utils";
@@ -69,6 +70,8 @@ export default function LivePage() {
   const format = useFormatter();
 
   const [rows, setRows] = useState<LiveRow[]>([]);
+  // 첫 시트 연동이 끝날 때까지 "서버 연동 중" 팝업 표시
+  const [syncing, setSyncing] = useState(isFirebaseConfigured);
   const knownIds = useRef<Set<string> | null>(null);
   const [, setTick] = useState(0);
 
@@ -96,6 +99,8 @@ export default function LivePage() {
           knownIds.current = new Set(sorted.map((b) => b.id));
         } catch {
           /* 다음 폴링에서 재시도 */
+        } finally {
+          if (!cancelled) setSyncing(false);
         }
       };
       load();
@@ -122,6 +127,7 @@ export default function LivePage() {
 
   return (
     <div className="mx-auto max-w-lg space-y-3 p-4">
+      <SyncOverlay show={syncing} text={tApp("syncing")} />
       <div className="flex items-center gap-2">
         <span className="relative flex h-2.5 w-2.5">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />

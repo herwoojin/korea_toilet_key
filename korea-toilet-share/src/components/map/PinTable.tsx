@@ -8,6 +8,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
+import { hasVoted, markVoted } from "@/lib/votes";
 import { toMillis, type Building, type Gender } from "@/types/building";
 
 interface Props {
@@ -85,6 +86,11 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
       setMsg(tReveal("loginRequired"));
       return;
     }
+    // 1인 1회 — 기기 단 선차단 (서버 uid 검증의 보조)
+    if (hasVoted(b.id)) {
+      setMsg(tFeedback("already"));
+      return;
+    }
     try {
       const token = await user.getIdToken();
       // 구글시트 저장소 — 핀 id 기준 카운트 증가
@@ -97,12 +103,17 @@ export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: 
         body: JSON.stringify({ id: b.id, result }),
       });
       if (res.ok) {
+        markVoted(b.id);
         bump();
         return;
       }
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
-      // 1인 1회 제한 — 이미 평가한 핀
-      setMsg(data?.error === "ALREADY_VOTED" ? tFeedback("already") : tFeedback("error"));
+      if (data?.error === "ALREADY_VOTED") {
+        markVoted(b.id);
+        setMsg(tFeedback("already"));
+      } else {
+        setMsg(tFeedback("error"));
+      }
     } catch {
       setMsg(tFeedback("error"));
     }

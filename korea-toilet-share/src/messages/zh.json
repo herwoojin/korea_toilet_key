@@ -3,7 +3,8 @@
     "name": "卫生间密码共享地图",
     "shortName": "KOREA TOILET KEY",
     "description": "在地图上查看韩国商业楼宇男女卫生间位置与门禁密码的信任型共享服务",
-    "demoBanner": "演示模式 — 设置 Firebase 环境变量后将显示真实数据"
+    "demoBanner": "演示模式 — 设置 Firebase 环境变量后将显示真实数据",
+    "syncing": "正在连接服务器（Google表格）…"
   },
   "common": {
     "loading": "加载中…",
@@ -163,7 +164,8 @@
     "empty": "还没有图钉。点击地图添加第一个吧！",
     "saved": "已保存！与Google表格同步，可能需要几秒才会显示。",
     "syncNote": "数据与Google表格同步，可能延迟几秒。如果看不到刚登记的信息，请点击刷新。",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "loading": "正在加载信息…"
   },
   "gate": {
     "checking": "正在检查位置权限…",

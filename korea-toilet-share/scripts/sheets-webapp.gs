@@ -67,10 +67,13 @@ function doPost(e) {
     if (body.action === "add") {
       var p = body.pin || {};
       var id = "pin-" + Date.now() + "-" + Math.floor(Math.random() * 10000);
+      // 비번은 "0000"처럼 숫자형이면 시트가 0으로 바꿔버림 → 어포스트로피로 텍스트 강제
+      var malePw = String(p.malePw || "");
+      var femalePw = String(p.femalePw || "");
       sh.appendRow([
         id, new Date().toISOString(),
         p.name || "", p.storeName || "", p.address || "",
-        p.lat, p.lng, String(p.malePw || ""), String(p.femalePw || ""),
+        p.lat, p.lng, malePw ? "'" + malePw : "", femalePw ? "'" + femalePw : "",
         p.nickname || "", p.uid || "", 0, 0, "", "",
       ]);
       return json_({ ok: true, id: id });

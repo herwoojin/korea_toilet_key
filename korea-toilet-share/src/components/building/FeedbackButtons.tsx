@@ -5,6 +5,7 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { hasVoted, markVoted } from "@/lib/votes";
 
 interface Props {
   buildingId: string;
@@ -16,7 +17,8 @@ interface Props {
 export default function FeedbackButtons({ buildingId, demo }: Props) {
   const t = useTranslations("feedback");
   const { user } = useAuth();
-  const [done, setDone] = useState(false);
+  // 이미 평가한 핀이면 처음부터 완료 상태로
+  const [done, setDone] = useState(() => !demo && hasVoted(buildingId));
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -26,6 +28,11 @@ export default function FeedbackButtons({ buildingId, demo }: Props) {
     try {
       if (demo || !user) {
         setDone(true);
+        return;
+      }
+      if (hasVoted(buildingId)) {
+        setDone(true);
+        setMsg(t("already"));
         return;
       }
       const token = await user.getIdToken();
@@ -38,11 +45,13 @@ export default function FeedbackButtons({ buildingId, demo }: Props) {
         body: JSON.stringify({ id: buildingId, result }),
       });
       if (res.ok) {
+        markVoted(buildingId);
         setDone(true);
         return;
       }
       const data = (await res.json().catch(() => null)) as { error?: string } | null;
       if (data?.error === "ALREADY_VOTED") {
+        markVoted(buildingId);
         setDone(true);
         setMsg(t("already"));
       } else {

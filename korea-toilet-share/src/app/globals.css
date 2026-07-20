@@ -75,6 +75,17 @@
   }
 }
 
+/* 연동 중 팝업 — 0.25초 지연 후 표시 (즉시 응답이면 안 보임) */
+.sync-overlay-card {
+  opacity: 0;
+  animation: syncFadeIn 0.2s ease 0.25s forwards;
+}
+@keyframes syncFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
 .leaflet-container {
   width: 100%;
   height: 100%;

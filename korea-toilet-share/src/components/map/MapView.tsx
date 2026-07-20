@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ConfidenceBadge from "@/components/building/ConfidenceBadge";
+import SyncOverlay from "@/components/common/SyncOverlay";
 import PendingPinForm, { type PendingPinFields } from "./PendingPinForm";
 import PinTable from "./PinTable";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -179,15 +180,21 @@ export default function MapView() {
   // 주변 빌딩 조회 (T-105)
   // 표시: 지도 중심 기준 넓은 반경 — GPS가 없어도 등록된 핀을 볼 수 있다.
   // (등록만 실제 GPS 반경 50m 제한 — handleMapClick/서버에서 검증)
+  const [pinsLoading, setPinsLoading] = useState(true);
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
-      const list = await fetchNearbyBuildings(
-        viewCenter.lat,
-        viewCenter.lng,
-        FETCH_RADIUS_M
-      );
-      if (!cancelled) setBuildings(list);
+      setPinsLoading(true);
+      try {
+        const list = await fetchNearbyBuildings(
+          viewCenter.lat,
+          viewCenter.lng,
+          FETCH_RADIUS_M
+        );
+        if (!cancelled) setBuildings(list);
+      } finally {
+        if (!cancelled) setPinsLoading(false);
+      }
     };
     run().catch(() => undefined);
     return () => {
@@ -331,6 +338,8 @@ export default function MapView() {
 
   return (
     <div className="relative h-full w-full">
+      {/* 시트 연동 로딩 팝업 — 0.25초 넘게 걸릴 때만 표시 */}
+      <SyncOverlay show={pinsLoading} text={tPin("loading")} />
       <MapContainer
         center={[DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]}
         zoom={16}

@@ -3,7 +3,8 @@
     "name": "Shared toilet passcode map",
     "shortName": "KOREA TOILET KEY",
     "description": "A trust-based sharing service to find restroom locations and door passcodes of Korean commercial buildings on a map",
-    "demoBanner": "Demo mode — set Firebase environment variables to see real data"
+    "demoBanner": "Demo mode — set Firebase environment variables to see real data",
+    "syncing": "Syncing with server (Google Sheets)…"
   },
   "common": {
     "loading": "Loading…",
@@ -163,7 +164,8 @@
     "empty": "No pins yet. Tap the map to add the first one!",
     "saved": "Pin saved! It may take a few seconds to appear (synced with Google Sheets).",
     "syncNote": "Data is synced with Google Sheets, so updates may lag a few seconds. Tap refresh if your pin is missing.",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "loading": "Loading pins…"
   },
   "gate": {
     "checking": "Checking location permission…",
