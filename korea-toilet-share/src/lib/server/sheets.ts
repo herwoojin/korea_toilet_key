@@ -69,9 +69,19 @@ async function parseScriptResponse<T>(res: Response, failCode: string): Promise<
   try {
     return JSON.parse(text) as T;
   } catch {
-    const hint = /accounts\.google\.com|로그인|Sign in/i.test(text)
-      ? "웹앱이 로그인 페이지를 반환 — 배포의 '액세스 권한'을 '모든 사용자'로 재배포 필요"
-      : `JSON이 아닌 응답: ${text.slice(0, 120)}`;
+    let hint: string;
+    if (/accounts\.google\.com|로그인|Sign in/i.test(text)) {
+      hint = "웹앱이 로그인 페이지를 반환 — 배포의 '액세스 권한'을 '모든 사용자'로 재배포 필요";
+    } else {
+      // HTML 오류 페이지에서 사람이 읽을 텍스트만 추출해 원인 노출
+      const visible = text
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      hint = `Apps Script 응답: ${visible.slice(0, 200)}`;
+    }
     throw new ApiError(502, failCode, hint);
   }
 }
