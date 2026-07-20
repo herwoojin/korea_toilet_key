@@ -23,7 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "app" });
   return {
-    title: "Korea Toilet Sharing Service | 코리아 토일럿 쉐어링",
+    title: "KOREA TOILET KEY",
     description: t("description"),
     manifest: "/manifest.webmanifest",
   };

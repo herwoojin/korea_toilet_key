@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Korea Toilet Sharing Service",
-    "shortName": "韩国卫生间共享",
+    "name": "卫生间密码共享地图",
+    "shortName": "KOREA TOILET KEY",
     "description": "在地图上查看韩国商业楼宇男女卫生间位置与门禁密码的信任型共享服务",
     "demoBanner": "演示模式 — 设置 Firebase 环境变量后将显示真实数据"
   },
@@ -24,8 +24,8 @@
   },
   "map": {
     "locate": "回到我的位置",
-    "nearOnly": "仅显示您位置50米范围内的楼宇，移动后自动更新。",
-    "geoDenied": "位置权限被拒绝。请尝试通过地址搜索。",
+    "nearOnly": "只能在您位置50米范围内登记新信息。移动地图可自由查看已登记的信息。",
+    "geoDenied": "无法获取您的位置。仍可查看信息，但登记新信息需要位置权限。请尝试右下角的定位按钮。",
     "searchPlaceholder": "搜索地址或建筑名",
     "search": "搜索",
     "searchNoKey": "未设置 Kakao REST API 密钥，无法使用地址搜索。",
@@ -172,7 +172,8 @@
     "allow": "允许位置",
     "deniedTitle": "位置权限被拒绝",
     "deniedBody": "请点击浏览器地址栏的锁形（设置）图标 → 网站设置，将位置权限改为允许，然后点击重新检查。",
-    "retry": "重新检查"
+    "retry": "重新检查",
+    "skip": "不使用位置继续浏览"
   },
   "live": {
     "live": "LIVE",

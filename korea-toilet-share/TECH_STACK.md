@@ -25,6 +25,8 @@ flowchart TD
 | TypeScript | 5 | 정적 타입 | 전체 | strict |
 | Tailwind CSS | 3.4 | 스타일 | `tailwind.config.ts` | 브랜드 #2563EB |
 | shadcn/ui 스타일 | - | UI 컴포넌트 | `src/components/ui/` | radix-dialog + cva 직접 구성 |
+| Paperlogy 폰트 | - | 전역 서체 (시니어용 18px 기본) | `src/app/globals.css` | jsdelivr CDN woff2 |
+| ShaderBackground | - | 첫화면 WebGL 웨이브 배경 | `src/components/ui/istanblue.tsx` | 의존성 0, 21st.dev Shader Builder |
 | Leaflet / react-leaflet | 1.9 / 4.2 | 지도 (OSM) | `src/components/map/MapView.tsx` | dynamic import ssr:false 필수 |
 | geofire-common | 6 | geohash 반경 쿼리 | `src/lib/geo.ts` | 경계 셀 전체 순회 |
 | next-intl | 3.26 | i18n (ko/en/zh/ja) | `src/i18n/`, `src/messages/` | 하드코딩 문자열 금지 |

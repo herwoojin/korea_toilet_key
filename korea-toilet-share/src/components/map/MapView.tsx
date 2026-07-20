@@ -29,7 +29,7 @@ import type { LatLng } from "@/lib/map/MapProvider";
 import type { Building } from "@/types/building";
 
 const DEFAULT_CENTER: LatLng = { lat: 37.498095, lng: 127.02761 }; // 강남역
-const FETCH_RADIUS_M = 1200;
+const FETCH_RADIUS_M = 3000;
 
 // Leaflet 기본 아이콘 경로 문제 회피 — 브랜드 컬러 SVG 핀 (GUIDE §8)
 const pinIcon = L.divIcon({
@@ -135,14 +135,22 @@ export default function MapView() {
       setGeoDenied(true);
       return;
     }
+    const onOk = (pos: GeolocationPosition) => {
+      const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      setMyLocation(c);
+      setCenter(c);
+      setGeoDenied(false);
+    };
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const c = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setMyLocation(c);
-        setCenter(c);
-        setGeoDenied(false);
+      onOk,
+      () => {
+        // 고정밀 실패(데스크톱 CoreLocation 등) → 저정밀·캐시 허용으로 1회 재시도
+        navigator.geolocation.getCurrentPosition(onOk, () => setGeoDenied(true), {
+          enableHighAccuracy: false,
+          timeout: 15000,
+          maximumAge: 600_000,
+        });
       },
-      () => setGeoDenied(true),
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
@@ -169,36 +177,23 @@ export default function MapView() {
   }, []);
 
   // 주변 빌딩 조회 (T-105)
-  // 실서비스: 내 실제 위치 반경 50m 안의 빌딩만 표시, 이동 시 자동 갱신
-  // 데모 모드: 지도 중심 기준 넓은 반경 (데모 데이터 확인용)
+  // 표시: 지도 중심 기준 넓은 반경 — GPS가 없어도 등록된 핀을 볼 수 있다.
+  // (등록만 실제 GPS 반경 50m 제한 — handleMapClick/서버에서 검증)
   useEffect(() => {
     let cancelled = false;
     const run = async () => {
-      if (isFirebaseConfigured) {
-        if (!myLocation) {
-          if (!cancelled) setBuildings([]);
-          return;
-        }
-        const list = await fetchNearbyBuildings(
-          myLocation.lat,
-          myLocation.lng,
-          REGISTER_RADIUS_M
-        );
-        if (!cancelled) setBuildings(list);
-      } else {
-        const list = await fetchNearbyBuildings(
-          viewCenter.lat,
-          viewCenter.lng,
-          FETCH_RADIUS_M
-        );
-        if (!cancelled) setBuildings(list);
-      }
+      const list = await fetchNearbyBuildings(
+        viewCenter.lat,
+        viewCenter.lng,
+        FETCH_RADIUS_M
+      );
+      if (!cancelled) setBuildings(list);
     };
     run().catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [viewCenter, myLocation, refreshKey]);
+  }, [viewCenter, refreshKey]);
 
   // 지도 클릭 → 대기 핀 + 역지오코딩 주소
   // 등록 제한: 현재 위치 반경 50m 안의 지점만 핀 등록 가능

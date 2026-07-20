@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Korea Toilet Sharing Service",
-    "shortName": "Korea Toilet Sharing",
+    "name": "Shared toilet passcode map",
+    "shortName": "KOREA TOILET KEY",
     "description": "A trust-based sharing service to find restroom locations and door passcodes of Korean commercial buildings on a map",
     "demoBanner": "Demo mode — set Firebase environment variables to see real data"
   },
@@ -24,8 +24,8 @@
   },
   "map": {
     "locate": "Go to my location",
-    "nearOnly": "Only buildings within 50 m of your location are shown. They refresh as you move.",
-    "geoDenied": "Location permission denied. Try searching by address instead.",
+    "nearOnly": "New pins can only be added within 50m of your location. Browse existing pins freely by moving the map.",
+    "geoDenied": "Couldn't get your location. You can still browse pins, but adding a new pin requires location. Try the locate button (bottom right).",
     "searchPlaceholder": "Search address or building",
     "search": "Search",
     "searchNoKey": "Address search is unavailable because the Kakao REST API key is not set.",
@@ -172,7 +172,8 @@
     "allow": "Allow location",
     "deniedTitle": "Location permission denied",
     "deniedBody": "Open the lock (site settings) icon in your browser's address bar, set Location to 'Allow', then tap Check again.",
-    "retry": "Check again"
+    "retry": "Check again",
+    "skip": "Browse without location"
   },
   "live": {
     "live": "LIVE",

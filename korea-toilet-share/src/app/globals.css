@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Paperlogy — 눈누 무료 폰트 (jsdelivr CDN), 전역 적용 */
+@font-face {
+  font-family: "Paperlogy";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-6SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paperlogy";
+  src: url("https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -30,8 +64,14 @@
   * {
     @apply border-border;
   }
+  /* 시니어 가독성: 기본 글자 크기를 16px → 18px로 키움 (rem 기반 전체 확대) */
+  html {
+    font-size: 18px;
+  }
   body {
     @apply bg-background text-foreground;
+    font-family: "Paperlogy", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+      "Noto Sans KR", "Segoe UI", sans-serif;
   }
 }
 

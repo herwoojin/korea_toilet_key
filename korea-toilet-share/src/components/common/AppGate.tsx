@@ -5,6 +5,7 @@ import { signInWithCustomToken } from "firebase/auth";
 import { LocateFixed, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ShaderBackground } from "@/components/ui/istanblue";
 import LoginButtons from "@/components/common/LoginButtons";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { getClientAuth, isFirebaseConfigured } from "@/lib/firebase/client";
@@ -113,48 +114,55 @@ export default function AppGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // ① 첫 로그인 화면
+  // ① 첫 로그인 화면 — WebGL 웨이브 배경(istanblue) 위 글래스 카드
   if (!authed) {
     return (
-      <GateShell>
-        <svg viewBox="0 0 64 64" className="h-24 w-24" aria-hidden>
-          <path d="M32 2C18.7 2 8 12.7 8 26c0 17 24 36 24 36s24-19 24-36C56 12.7 45.3 2 32 2z" fill="#2563EB" />
-          <circle cx="24" cy="15" r="3.2" fill="#fff" />
-          <rect x="20.9" y="19.3" width="6.2" height="8.6" rx="2" fill="#fff" />
-          <rect x="21.7" y="27.9" width="2.1" height="6.6" fill="#fff" />
-          <rect x="24.3" y="27.9" width="2.1" height="6.6" fill="#fff" />
-          <circle cx="40" cy="15" r="3.2" fill="#fff" />
-          <path d="M40 19l-4.4 9.6h8.8z" fill="#fff" />
-          <rect x="38" y="28.6" width="1.8" height="6" fill="#fff" />
-          <rect x="40.2" y="28.6" width="1.8" height="6" fill="#fff" />
-          <rect x="27.6" y="41.5" width="8.8" height="7.2" rx="1.6" fill="#fff" />
-          <path d="M29.6 41.5v-3a2.5 2.5 0 0 1 5-.5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-        <div>
-          <h1 className="text-2xl font-bold">{tApp("shortName")}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{tApp("name")}</p>
+      <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-6 py-10 text-center">
+        <ShaderBackground className="absolute inset-0" />
+        <div className="relative z-10 flex w-full max-w-sm flex-col items-center gap-6 rounded-3xl border border-white/25 bg-white/15 p-8 shadow-2xl backdrop-blur-md">
+          <div className="rounded-full bg-white/95 p-4 shadow-lg">
+            <svg viewBox="0 0 64 64" className="h-20 w-20" aria-hidden>
+              <path d="M32 2C18.7 2 8 12.7 8 26c0 17 24 36 24 36s24-19 24-36C56 12.7 45.3 2 32 2z" fill="#2563EB" />
+              <circle cx="24" cy="15" r="3.2" fill="#fff" />
+              <rect x="20.9" y="19.3" width="6.2" height="8.6" rx="2" fill="#fff" />
+              <rect x="21.7" y="27.9" width="2.1" height="6.6" fill="#fff" />
+              <rect x="24.3" y="27.9" width="2.1" height="6.6" fill="#fff" />
+              <circle cx="40" cy="15" r="3.2" fill="#fff" />
+              <path d="M40 19l-4.4 9.6h8.8z" fill="#fff" />
+              <rect x="38" y="28.6" width="1.8" height="6" fill="#fff" />
+              <rect x="40.2" y="28.6" width="1.8" height="6" fill="#fff" />
+              <rect x="27.6" y="41.5" width="8.8" height="7.2" rx="1.6" fill="#fff" />
+              <path d="M29.6 41.5v-3a2.5 2.5 0 0 1 5-.5" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-wide text-white drop-shadow-md">
+              {tApp("shortName")}
+            </h1>
+            <p className="mt-2 text-lg font-medium text-white/90">{tApp("name")}</p>
+          </div>
+          <p className="text-base leading-relaxed text-white/85">{tLogin("tagline")}</p>
+          <div className="w-full">
+            <LoginButtons extraError={kakaoError} />
+          </div>
+          {!isFirebaseConfigured && (
+            <Button
+              variant="outline"
+              className="w-full border-white/40 bg-white/10 text-white hover:bg-white/20"
+              onClick={() => {
+                setDemoPass(true);
+                try {
+                  sessionStorage.setItem("demoPass", "1");
+                } catch {
+                  /* ignore */
+                }
+              }}
+            >
+              {tLogin("demoContinue")}
+            </Button>
+          )}
         </div>
-        <p className="max-w-xs text-sm text-muted-foreground">{tLogin("tagline")}</p>
-        <div className="w-full max-w-xs">
-          <LoginButtons extraError={kakaoError} />
-        </div>
-        {!isFirebaseConfigured && (
-          <Button
-            variant="outline"
-            className="w-full max-w-xs"
-            onClick={() => {
-              setDemoPass(true);
-              try {
-                sessionStorage.setItem("demoPass", "1");
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
-            {tLogin("demoContinue")}
-          </Button>
-        )}
-      </GateShell>
+      </div>
     );
   }
 
@@ -174,6 +182,10 @@ export default function AppGate({ children }: { children: ReactNode }) {
             <Button onClick={requestGeo}>
               <LocateFixed className="h-4 w-4" />
               {t("retry")}
+            </Button>
+            {/* 열람은 위치 없이도 가능 — 등록만 GPS 50m 검증 */}
+            <Button variant="ghost" onClick={() => setGeo("granted")}>
+              {t("skip")}
             </Button>
           </>
         ) : (
