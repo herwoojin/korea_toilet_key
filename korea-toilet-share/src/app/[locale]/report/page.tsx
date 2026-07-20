@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { AuroraBackground } from "@/components/ui/digital-aurora";
 
 /**
  * 비밀번호 제보 안내 — 제보는 지도 화면의 핀 등록으로 일원화됨 (구글시트 저장).
@@ -14,10 +15,13 @@ export default function ReportPage() {
   const t = useTranslations("report");
 
   return (
-    <div className="mx-auto max-w-lg space-y-4 p-4">
-      <h1 className="text-xl font-bold">{t("title")}</h1>
+    <div className="relative min-h-full">
+      {/* 오로라 배경 — 콘텐츠 뒤 전체 화면 */}
+      <AuroraBackground className="fixed inset-0" />
+      <div className="relative mx-auto max-w-lg space-y-4 p-4">
+      <h1 className="text-xl font-bold text-white drop-shadow">{t("title")}</h1>
 
-      <Card>
+      <Card className="border-white/20 bg-card/95 shadow-xl backdrop-blur">
         <CardContent className="space-y-4 pt-6">
           <div className="flex items-start gap-3">
             <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-orange-500" aria-hidden />
@@ -39,9 +43,10 @@ export default function ReportPage() {
         </CardContent>
       </Card>
 
-      <p className="rounded-md bg-blue-50 px-3 py-2 text-xs leading-relaxed text-blue-800">
+      <p className="rounded-md bg-blue-50/90 px-3 py-2 text-xs leading-relaxed text-blue-800 backdrop-blur">
         {t("syncNote")}
       </p>
+      </div>
     </div>
   );
 }

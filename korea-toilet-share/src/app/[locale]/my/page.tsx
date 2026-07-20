@@ -14,6 +14,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuroraBackground } from "@/components/ui/digital-aurora";
 import { Input } from "@/components/ui/input";
 import LoginSheet from "@/components/common/LoginSheet";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -80,25 +81,33 @@ export default function MyPage() {
 
   if (!configured || !user) {
     return (
-      <div className="mx-auto max-w-lg space-y-3 p-4">
-        <h1 className="text-xl font-bold">{t("title")}</h1>
-        <p className="text-sm text-muted-foreground">{t("loginFirst")}</p>
-        {configured && (
-          <>
-            <Button onClick={() => setLoginOpen(true)}>{t("loginFirst")}</Button>
-            <LoginSheet open={loginOpen} onOpenChange={setLoginOpen} />
-          </>
-        )}
+      <div className="relative min-h-full">
+        <AuroraBackground className="fixed inset-0" />
+        <div className="relative mx-auto max-w-lg space-y-3 p-4">
+          <h1 className="text-xl font-bold text-white drop-shadow">{t("title")}</h1>
+          <p className="text-sm text-white/75">{t("loginFirst")}</p>
+          {configured && (
+            <>
+              <Button onClick={() => setLoginOpen(true)}>{t("loginFirst")}</Button>
+              <LoginSheet open={loginOpen} onOpenChange={setLoginOpen} />
+            </>
+          )}
+        </div>
       </div>
     );
   }
 
+  const glassCard = "border-white/20 bg-card/95 shadow-xl backdrop-blur";
+
   return (
-    <div className="mx-auto max-w-lg space-y-4 p-4">
-      <h1 className="text-xl font-bold">{t("title")}</h1>
+    <div className="relative min-h-full">
+      {/* 오로라 배경 — 콘텐츠 뒤 전체 화면 */}
+      <AuroraBackground className="fixed inset-0" />
+      <div className="relative mx-auto max-w-lg space-y-4 p-4">
+      <h1 className="text-xl font-bold text-white drop-shadow">{t("title")}</h1>
 
       <div className="grid grid-cols-2 gap-3">
-        <Card>
+        <Card className={glassCard}>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">{t("points")}</CardTitle>
           </CardHeader>
@@ -106,7 +115,7 @@ export default function MyPage() {
             <p className="text-2xl font-bold text-primary">{profile?.points ?? 0}</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={glassCard}>
           <CardHeader>
             <CardTitle className="text-sm text-muted-foreground">{t("freeReveals")}</CardTitle>
           </CardHeader>
@@ -116,7 +125,7 @@ export default function MyPage() {
         </Card>
       </div>
 
-      <Card>
+      <Card className={glassCard}>
         <CardHeader>
           <CardTitle className="text-base">{t("settings")}</CardTitle>
         </CardHeader>
@@ -141,7 +150,7 @@ export default function MyPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className={glassCard}>
         <CardHeader>
           <CardTitle className="text-base">{t("history")}</CardTitle>
         </CardHeader>
@@ -172,6 +181,7 @@ export default function MyPage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

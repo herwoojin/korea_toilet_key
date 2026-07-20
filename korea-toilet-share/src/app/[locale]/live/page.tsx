@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { AuroraBackground } from "@/components/ui/digital-aurora";
 import SyncOverlay from "@/components/common/SyncOverlay";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_BUILDINGS } from "@/lib/mock/buildings";
@@ -126,24 +127,27 @@ export default function LivePage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-lg space-y-3 p-4">
+    <div className="relative min-h-full">
+      {/* 오로라 배경 — 콘텐츠 뒤 전체 화면 */}
+      <AuroraBackground className="fixed inset-0" />
+      <div className="relative mx-auto max-w-lg space-y-3 p-4">
       <SyncOverlay show={syncing} text={tApp("syncing")} />
       <div className="flex items-center gap-2">
         <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-400" />
         </span>
-        <span className="text-xs font-bold text-red-500">{t("live")}</span>
-        <h1 className="text-xl font-bold">{t("title")}</h1>
+        <span className="text-xs font-bold text-red-400">{t("live")}</span>
+        <h1 className="text-xl font-bold text-white drop-shadow">{t("title")}</h1>
       </div>
-      <p className="text-xs leading-relaxed text-muted-foreground">{t("desc")}</p>
+      <p className="text-xs leading-relaxed text-white/75">{t("desc")}</p>
       {!isFirebaseConfigured && (
-        <p className="rounded-md bg-blue-50 px-3 py-2 text-xs text-blue-800">
+        <p className="rounded-md bg-blue-50/90 px-3 py-2 text-xs text-blue-800 backdrop-blur">
           {tApp("demoBanner")}
         </p>
       )}
 
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-xl border border-white/20 bg-background/95 shadow-xl backdrop-blur">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-xs text-muted-foreground">
             <tr>
@@ -182,6 +186,7 @@ export default function LivePage() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );
