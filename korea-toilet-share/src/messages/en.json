@@ -94,7 +94,7 @@
     "error": "Sign-in failed"
   },
   "report": {
-    "title": "Report a passcode",
+    "title": "What's the toilet code here?",
     "loginFirst": "Please sign in to submit a report.",
     "searchLabel": "Search building address",
     "selected": "Selected location",
@@ -111,7 +111,8 @@
     "step2": "Enter the building/store name and male/female passwords",
     "step3": "Tap Add — saved to Google Sheets",
     "goMap": "Go to map",
-    "syncNote": "Data is synced with Google Sheets. New pins and votes may take a few seconds to appear — refresh if missing."
+    "syncNote": "Data is synced with Google Sheets. New pins and votes may take a few seconds to appear — refresh if missing.",
+    "disclaimer": "Information on this page may be inaccurate. You are solely responsible for any unauthorized use, and legal responsibility lies with the person who uses the space."
   },
   "my": {
     "title": "My page",
