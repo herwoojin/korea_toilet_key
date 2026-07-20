@@ -48,19 +48,42 @@ export async function requireUidViaRest(req: Request): Promise<string> {
 }
 
 function webAppUrl(): string {
-  const url = process.env.SHEETS_WEBAPP_URL;
+  const url = process.env.SHEETS_WEBAPP_URL?.trim();
   if (!url) throw new ApiError(503, "NO_SHEETS");
+  // 흔한 실수 즉시 감지: 시트 링크를 넣거나 /exec가 아닌 URL을 넣은 경우
+  if (!url.includes("script.google.com")) {
+    throw new ApiError(503, "BAD_SHEETS_URL", "SHEETS_WEBAPP_URL은 Apps Script 배포 URL(script.google.com/macros/…/exec)이어야 합니다");
+  }
+  if (!url.endsWith("/exec")) {
+    throw new ApiError(503, "BAD_SHEETS_URL", "URL이 /exec로 끝나야 합니다 (테스트용 /dev 아님)");
+  }
   return url;
+}
+
+/** Apps Script 응답 파싱 — 로그인 페이지(HTML)가 오면 배포 설정 문제를 detail로 알려줌 */
+async function parseScriptResponse<T>(res: Response, failCode: string): Promise<T> {
+  const text = await res.text();
+  if (!res.ok) {
+    throw new ApiError(502, failCode, `Apps Script HTTP ${res.status}`);
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    const hint = /accounts\.google\.com|로그인|Sign in/i.test(text)
+      ? "웹앱이 로그인 페이지를 반환 — 배포의 '액세스 권한'을 '모든 사용자'로 재배포 필요"
+      : `JSON이 아닌 응답: ${text.slice(0, 120)}`;
+    throw new ApiError(502, failCode, hint);
+  }
 }
 
 /** 시트 전체 핀 조회 */
 export async function fetchSheetPins(): Promise<SheetPin[]> {
   const res = await fetch(webAppUrl(), { redirect: "follow", cache: "no-store" });
-  if (!res.ok) throw new ApiError(502, "SHEETS_READ_FAILED");
-  const data = (await res.json().catch(() => null)) as
-    | { ok?: boolean; pins?: SheetPin[] }
-    | null;
-  if (!data?.ok) throw new ApiError(502, "SHEETS_READ_FAILED");
+  const data = await parseScriptResponse<{ ok?: boolean; pins?: SheetPin[]; error?: string }>(
+    res,
+    "SHEETS_READ_FAILED"
+  );
+  if (!data.ok) throw new ApiError(502, "SHEETS_READ_FAILED", data.error);
   return data.pins ?? [];
 }
 
@@ -75,11 +98,11 @@ export async function postToSheet(
     body: JSON.stringify(body),
     redirect: "follow",
   });
-  if (!res.ok) throw new ApiError(502, "SHEETS_WRITE_FAILED");
-  const data = (await res.json().catch(() => null)) as
-    | { ok?: boolean; id?: string; error?: string }
-    | null;
-  if (!data?.ok) throw new ApiError(502, data?.error ?? "SHEETS_WRITE_FAILED");
+  const data = await parseScriptResponse<{ ok?: boolean; id?: string; error?: string }>(
+    res,
+    "SHEETS_WRITE_FAILED"
+  );
+  if (!data.ok) throw new ApiError(502, "SHEETS_WRITE_FAILED", data.error);
   return data as { ok: boolean; id?: string; error?: string };
 }
 

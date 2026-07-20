@@ -260,13 +260,17 @@ export default function MapView() {
           gpsLng: myLocation?.lng,
         }),
       });
-      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      const data = (await res.json().catch(() => null)) as
+        | { error?: string; detail?: string }
+        | null;
       if (!res.ok) {
-        // 에러 코드를 함께 노출해 원인 파악 가능하게 (JSON이 아니면 HTTP 상태로 대체)
+        // 에러 코드·상세 힌트를 함께 노출해 원인 파악 가능하게
         setPinError(
           data?.error === "TOO_FAR"
             ? tPin("tooFar")
-            : `${tReport("error")} (${data?.error ?? `HTTP ${res.status}`})`
+            : `${tReport("error")} (${data?.error ?? `HTTP ${res.status}`}${
+                data?.detail ? ` — ${data.detail}` : ""
+              })`
         );
         return;
       }
