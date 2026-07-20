@@ -1,20 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { collection, limit, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useFormatter, useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
-import { getDb, isFirebaseConfigured } from "@/lib/firebase/client";
+import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { MOCK_BUILDINGS } from "@/lib/mock/buildings";
 import { cn } from "@/lib/utils";
-import { toMillis, type Gender } from "@/types/building";
+import { toMillis, type Building, type Gender } from "@/types/building";
 
 interface LiveRow {
   id: string;
   buildingName: string;
-  gender: Gender;
-  viewerNickname: string;
-  viewedAtMs: number;
+  nickname: string;
+  genders: Gender[];
+  atMs: number;
   isNew: boolean;
 }
 
@@ -35,17 +34,33 @@ function makeDemoRow(ms: number, isNew: boolean): LiveRow {
   return {
     id: `demo-${ms}-${demoSeq++}`,
     buildingName: b.name,
-    gender: Math.random() < 0.5 ? "male" : "female",
-    viewerNickname: DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)],
-    viewedAtMs: ms,
+    nickname: DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)],
+    genders: [Math.random() < 0.5 ? "male" : "female"],
+    atMs: ms,
     isNew,
   };
 }
 
+function pinToRow(b: Building, isNew: boolean): LiveRow {
+  const genders: Gender[] = [];
+  if (b.toilets?.male?.exists) genders.push("male");
+  if (b.toilets?.female?.exists) genders.push("female");
+  return {
+    id: b.id,
+    buildingName: b.name,
+    nickname: b.createdByNickname ?? "user",
+    genders,
+    atMs: toMillis(b.createdAt) ?? 0,
+    isNew,
+  };
+}
+
+const POLL_MS = 30_000;
+
 /**
- * 모두가 공유하는 실시간 열람 현황 (liveFeed 컬렉션 onSnapshot 구독)
- * 새 열람이 발생하면 표 맨 위에 애니메이션과 함께 실시간 추가된다.
- * Firebase env 미설정 시 5초마다 가상 열람이 흐르는 데모 피드로 동작.
+ * 실시간 등록 현황 — 구글시트의 핀 목록을 30초마다 폴링해 최근 등록 순으로 표시.
+ * 새로 나타난 핀은 애니메이션과 함께 맨 위에 추가된다.
+ * Firebase env 미설정 시 5초마다 가상 등록이 흐르는 데모 피드로 동작.
  */
 export default function LivePage() {
   const t = useTranslations("live");
@@ -54,7 +69,7 @@ export default function LivePage() {
   const format = useFormatter();
 
   const [rows, setRows] = useState<LiveRow[]>([]);
-  const firstLoad = useRef(true);
+  const knownIds = useRef<Set<string> | null>(null);
   const [, setTick] = useState(0);
 
   // 상대시각("n분 전") 주기 갱신
@@ -65,32 +80,30 @@ export default function LivePage() {
 
   useEffect(() => {
     if (isFirebaseConfigured) {
-      const q = query(
-        collection(getDb(), "liveFeed"),
-        orderBy("viewedAt", "desc"),
-        limit(30)
-      );
-      const unsub = onSnapshot(q, (snap) => {
-        const isFirst = firstLoad.current;
-        firstLoad.current = false;
-        const addedIds = new Set(
-          snap.docChanges().filter((c) => c.type === "added").map((c) => c.doc.id)
-        );
-        setRows(
-          snap.docs.map((d) => {
-            const data = d.data();
-            return {
-              id: d.id,
-              buildingName: (data.buildingName as string) ?? (data.buildingId as string),
-              gender: (data.gender as Gender) ?? "male",
-              viewerNickname: (data.viewerNickname as string) ?? "user",
-              viewedAtMs: toMillis(data.viewedAt) ?? Date.now(),
-              isNew: !isFirst && addedIds.has(d.id),
-            };
-          })
-        );
-      });
-      return unsub;
+      let cancelled = false;
+      const load = async () => {
+        try {
+          const res = await fetch("/api/pins", { cache: "no-store" });
+          if (!res.ok) return;
+          const data = (await res.json()) as { buildings?: Building[] };
+          if (cancelled || !data.buildings) return;
+          const first = knownIds.current == null;
+          const prev = knownIds.current ?? new Set<string>();
+          const sorted = [...data.buildings].sort(
+            (a, b) => (toMillis(b.createdAt) ?? 0) - (toMillis(a.createdAt) ?? 0)
+          );
+          setRows(sorted.slice(0, 30).map((b) => pinToRow(b, !first && !prev.has(b.id))));
+          knownIds.current = new Set(sorted.map((b) => b.id));
+        } catch {
+          /* 다음 폴링에서 재시도 */
+        }
+      };
+      load();
+      const id = setInterval(load, POLL_MS);
+      return () => {
+        cancelled = true;
+        clearInterval(id);
+      };
     }
 
     // 데모 모드: 가상 실시간 피드
@@ -145,14 +158,18 @@ export default function LivePage() {
               rows.map((r) => (
                 <tr key={r.id} className={cn("border-t", r.isNew && "live-row-new")}>
                   <td className="max-w-[90px] truncate px-3 py-2 font-medium">
-                    {r.viewerNickname}
+                    {r.nickname}
                   </td>
                   <td className="max-w-[130px] truncate px-3 py-2">{r.buildingName}</td>
-                  <td className="px-3 py-2">
-                    <Badge variant="secondary">{tBuilding(r.gender)}</Badge>
+                  <td className="space-x-1 px-3 py-2">
+                    {r.genders.map((g) => (
+                      <Badge key={g} variant="secondary">
+                        {tBuilding(g)}
+                      </Badge>
+                    ))}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2 text-right text-xs text-muted-foreground">
-                    {format.relativeTime(new Date(r.viewedAtMs))}
+                    {r.atMs ? format.relativeTime(new Date(r.atMs)) : "-"}
                   </td>
                 </tr>
               ))

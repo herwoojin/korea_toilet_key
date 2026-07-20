@@ -21,7 +21,7 @@ import ConfidenceBadge from "@/components/building/ConfidenceBadge";
 import PendingPinForm, { type PendingPinFields } from "./PendingPinForm";
 import PinTable from "./PinTable";
 import { useAuth } from "@/components/providers/AuthProvider";
-import { fetchNearbyBuildings } from "@/lib/buildings";
+import { fetchNearbyBuildings, invalidatePinsCache } from "@/lib/buildings";
 import { distanceM, REGISTER_RADIUS_M } from "@/lib/geo";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { addLocalPin } from "@/lib/mock/localPins";
@@ -108,6 +108,7 @@ export default function MapView() {
   const [pinError, setPinError] = useState<string | null>(null);
   const [tableOpen, setTableOpen] = useState(false);
   const [rangeError, setRangeError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   // 반경 초과 안내는 4초 후 자동 소멸
   useEffect(() => {
@@ -115,6 +116,19 @@ export default function MapView() {
     const id = setTimeout(() => setRangeError(null), 4000);
     return () => clearTimeout(id);
   }, [rangeError]);
+
+  // 저장 성공 등 안내 배너는 6초 후 자동 소멸
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 6000);
+    return () => clearTimeout(id);
+  }, [notice]);
+
+  /** 시트 캐시를 비우고 목록을 다시 불러온다 */
+  const refreshPins = useCallback(() => {
+    invalidatePinsCache();
+    setRefreshKey((k) => k + 1);
+  }, []);
 
   const locate = useCallback(() => {
     if (!("geolocation" in navigator)) {
@@ -239,6 +253,7 @@ export default function MapView() {
         return;
       }
       if (!user) return;
+      setNotice(null);
       const token = await user.getIdToken();
       // 저장소: Google Sheets (/api/pins) — Firestore 미사용
       const res = await fetch("/api/pins", {
@@ -275,7 +290,9 @@ export default function MapView() {
         return;
       }
       setPendingPin(null);
-      setRefreshKey((k) => k + 1);
+      // 시트 반영이 몇 초 늦을 수 있음을 안내하고 강제 재조회
+      setNotice(tPin("saved"));
+      refreshPins();
     } catch {
       setPinError(tReport("error"));
     } finally {
@@ -400,6 +417,11 @@ export default function MapView() {
             {rangeError}
           </p>
         )}
+        {notice && (
+          <p className="rounded-md bg-green-50/95 px-3 py-2 text-xs font-medium text-green-800 shadow">
+            {notice}
+          </p>
+        )}
       </div>
 
       {/* 좌측 하단: 핀 목록 토글 */}
@@ -482,6 +504,7 @@ export default function MapView() {
         <PinTable
           buildings={buildings}
           onClose={() => setTableOpen(false)}
+          onRefresh={refreshPins}
           onRowClick={(b) => {
             setCenter({ lat: b.lat, lng: b.lng });
             setSelected(b);

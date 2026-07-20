@@ -83,16 +83,23 @@ export async function POST(req: Request) {
   }
 }
 
-/** 맞아요/틀려요 피드백 — 해당 핀의 카운트 증가 */
+/** 맞아요/틀려요 피드백 — 1인 1회, 해당 핀의 카운트 증가 */
 export async function PATCH(req: Request) {
   try {
     if (!isSheetsConfigured) throw new ApiError(503, "NO_SHEETS");
-    await requireUidViaRest(req);
+    const uid = await requireUidViaRest(req);
     const body = (await req.json()) as { id?: string; result?: string };
     if (!body.id || (body.result !== "correct" && body.result !== "wrong")) {
       throw new ApiError(400, "BAD_REQUEST");
     }
-    await postToSheet({ action: "feedback", id: body.id, result: body.result });
+    try {
+      await postToSheet({ action: "feedback", id: body.id, result: body.result, uid });
+    } catch (e) {
+      if (e instanceof ApiError && e.detail === "ALREADY_VOTED") {
+        throw new ApiError(409, "ALREADY_VOTED");
+      }
+      throw e;
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     return handleApiError(e);

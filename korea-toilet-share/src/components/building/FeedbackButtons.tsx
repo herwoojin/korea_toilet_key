@@ -5,44 +5,62 @@ import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/AuthProvider";
-import type { Gender } from "@/types/building";
 
 interface Props {
   buildingId: string;
-  gender: Gender;
-  /** 데모 모드에서는 null */
-  viewLogId: string | null;
+  /** 데모 모드 — 서버 호출 없이 완료 처리 */
+  demo?: boolean;
 }
 
-/** 열람 직후 "맞았어요/틀렸어요" — 신뢰도 실시간 보정 (FR-12, T-206) */
-export default function FeedbackButtons({ buildingId, gender, viewLogId }: Props) {
+/** 열람 직후 "맞았어요/틀렸어요" — 구글시트 카운트 반영, 1인 1회 (FR-12) */
+export default function FeedbackButtons({ buildingId, demo }: Props) {
   const t = useTranslations("feedback");
   const { user } = useAuth();
   const [done, setDone] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
 
   async function send(result: "correct" | "wrong") {
     setBusy(true);
+    setMsg(null);
     try {
-      if (viewLogId && user) {
-        const token = await user.getIdToken();
-        await fetch("/api/feedback", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ viewLogId, buildingId, gender, result }),
-        });
+      if (demo || !user) {
+        setDone(true);
+        return;
       }
-      setDone(true);
+      const token = await user.getIdToken();
+      const res = await fetch("/api/pins", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id: buildingId, result }),
+      });
+      if (res.ok) {
+        setDone(true);
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      if (data?.error === "ALREADY_VOTED") {
+        setDone(true);
+        setMsg(t("already"));
+      } else {
+        setMsg(t("error"));
+      }
+    } catch {
+      setMsg(t("error"));
     } finally {
       setBusy(false);
     }
   }
 
   if (done) {
-    return <p className="text-center text-sm text-muted-foreground">{t("thanks")}</p>;
+    return (
+      <p className="text-center text-sm text-muted-foreground">
+        {msg ?? t("thanks")}
+      </p>
+    );
   }
 
   return (
@@ -68,6 +86,7 @@ export default function FeedbackButtons({ buildingId, gender, viewLogId }: Props
           {t("wrong")}
         </Button>
       </div>
+      {msg && <p className="text-center text-xs text-destructive">{msg}</p>}
     </div>
   );
 }

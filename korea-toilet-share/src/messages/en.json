@@ -74,7 +74,9 @@
     "question": "Was the passcode correct?",
     "correct": "It worked",
     "wrong": "It was wrong",
-    "thanks": "Thanks for your feedback!"
+    "thanks": "Thanks for your feedback!",
+    "already": "You've already voted (one vote per person)",
+    "error": "Failed to submit. Please try again."
   },
   "login": {
     "title": "Sign in",
@@ -99,7 +101,13 @@
     "submit": "Submit report",
     "success": "Report submitted! You earned +10 points.",
     "error": "Failed to submit report",
-    "needSetup": "Reporting will be available once Firebase environment variables are set."
+    "needSetup": "Reporting will be available once Firebase environment variables are set.",
+    "mapGuide": "Password reports are made directly on the map. Tap a building within 50m of your location to open the form.",
+    "step1": "Tap a building within 50m of your location (blue dot) on the map",
+    "step2": "Enter the building/store name and male/female passwords",
+    "step3": "Tap Add — saved to Google Sheets",
+    "goMap": "Go to map",
+    "syncNote": "Data is synced with Google Sheets. New pins and votes may take a few seconds to appear — refresh if missing."
   },
   "my": {
     "title": "My page",
@@ -152,7 +160,10 @@
     "colCorrect": "Correct",
     "colWrong": "Wrong",
     "needReveal": "Reveal a passcode first to rate it",
-    "empty": "No pins yet. Tap the map to add the first one!"
+    "empty": "No pins yet. Tap the map to add the first one!",
+    "saved": "Pin saved! It may take a few seconds to appear (synced with Google Sheets).",
+    "syncNote": "Data is synced with Google Sheets, so updates may lag a few seconds. Tap refresh if your pin is missing.",
+    "refresh": "Refresh"
   },
   "gate": {
     "checking": "Checking location permission…",
@@ -165,13 +176,13 @@
   },
   "live": {
     "live": "LIVE",
-    "title": "Live Reveal Feed",
-    "desc": "See in real time who revealed which building's passcode. Every reveal is stored as a record.",
+    "title": "Live pin registrations",
+    "desc": "Newly registered toilet pins are shared here. Synced with Google Sheets (a few seconds of delay), auto-refreshes every 30s.",
     "colUser": "User",
     "colBuilding": "Building",
     "colToilet": "Restroom",
     "colTime": "Time",
-    "empty": "No reveals yet"
+    "empty": "No pins registered yet"
   },
   "battery": {
     "title": "Server capacity",

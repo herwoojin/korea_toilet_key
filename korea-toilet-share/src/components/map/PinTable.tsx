@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ThumbsDown, ThumbsUp, X } from "lucide-react";
+import { RefreshCw, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import EtiquettePledgeModal from "@/components/common/EtiquettePledgeModal";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -13,6 +13,7 @@ import { toMillis, type Building, type Gender } from "@/types/building";
 interface Props {
   buildings: Building[];
   onClose: () => void;
+  onRefresh?: () => void;
   onRowClick?: (b: Building) => void;
 }
 
@@ -20,9 +21,10 @@ interface Props {
  * 핀 목록 표 — 컬럼 순서: 건물명 · 점포명 · 남자비번 · 여자비번 · 등록일 · 등록자 · 맞아요 · 틀려요
  * 비번은 가려져 있고 탭하면 열람(기록 저장) 후 표시. 열람 후 맞아요/틀려요 평가 가능.
  */
-export default function PinTable({ buildings, onClose, onRowClick }: Props) {
+export default function PinTable({ buildings, onClose, onRefresh, onRowClick }: Props) {
   const t = useTranslations("pin");
   const tReveal = useTranslations("reveal");
+  const tFeedback = useTranslations("feedback");
   const format = useFormatter();
   const { user, profile } = useAuth();
 
@@ -94,9 +96,15 @@ export default function PinTable({ buildings, onClose, onRowClick }: Props) {
         },
         body: JSON.stringify({ id: b.id, result }),
       });
-      if (res.ok) bump();
+      if (res.ok) {
+        bump();
+        return;
+      }
+      const data = (await res.json().catch(() => null)) as { error?: string } | null;
+      // 1인 1회 제한 — 이미 평가한 핀
+      setMsg(data?.error === "ALREADY_VOTED" ? tFeedback("already") : tFeedback("error"));
     } catch {
-      /* ignore */
+      setMsg(tFeedback("error"));
     }
   }
 
@@ -130,10 +138,24 @@ export default function PinTable({ buildings, onClose, onRowClick }: Props) {
           <p className="font-semibold">{t("list")}</p>
           <p className="text-xs text-primary">{t("total", { count: buildings.length })}</p>
         </div>
-        <button onClick={onClose} aria-label="close">
-          <X className="h-4 w-4 text-muted-foreground" />
-        </button>
+        <div className="flex items-center gap-3">
+          {onRefresh && (
+            <button
+              className="flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-accent"
+              onClick={onRefresh}
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              {t("refresh")}
+            </button>
+          )}
+          <button onClick={onClose} aria-label="close">
+            <X className="h-4 w-4 text-muted-foreground" />
+          </button>
+        </div>
       </div>
+      <p className="px-4 pb-2 text-[11px] leading-relaxed text-muted-foreground">
+        {t("syncNote")}
+      </p>
       {msg && <p className="px-4 pb-2 text-xs text-destructive">{msg}</p>}
       <div className="overflow-auto border-t">
         <table className="w-full min-w-[720px] text-sm">

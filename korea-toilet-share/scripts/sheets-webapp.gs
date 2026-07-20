@@ -19,11 +19,21 @@ var SHEET_ID = "16jRMOhiEmtWqdbL5OiPsTxT2b2K-prK00sE02eUAekw";
 var HEADERS = [
   "id", "createdAt", "name", "storeName", "address", "lat", "lng",
   "malePw", "femalePw", "nickname", "uid", "correctCount", "wrongCount",
+  "correctUids", "wrongUids", // 1인 1회 투표 기록 (uid 콤마 목록)
 ];
 
 function getSheet_() {
   var sh = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
-  if (sh.getLastRow() === 0) sh.appendRow(HEADERS);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(HEADERS);
+  } else {
+    // 구버전 시트 마이그레이션: 누락된 헤더 컬럼을 자동 추가
+    var width = sh.getLastColumn();
+    if (width < HEADERS.length) {
+      sh.getRange(1, width + 1, 1, HEADERS.length - width)
+        .setValues([HEADERS.slice(width)]);
+    }
+  }
   return sh;
 }
 
@@ -61,7 +71,7 @@ function doPost(e) {
         id, new Date().toISOString(),
         p.name || "", p.storeName || "", p.address || "",
         p.lat, p.lng, String(p.malePw || ""), String(p.femalePw || ""),
-        p.nickname || "", p.uid || "", 0, 0,
+        p.nickname || "", p.uid || "", 0, 0, "", "",
       ]);
       return json_({ ok: true, id: id });
     }
@@ -70,9 +80,21 @@ function doPost(e) {
       var rows = sh.getDataRange().getValues();
       for (var i = 1; i < rows.length; i++) {
         if (String(rows[i][0]) === String(body.id)) {
-          // 1-based 컬럼: correctCount=12, wrongCount=13
-          var col = body.result === "wrong" ? 13 : 12;
-          sh.getRange(i + 1, col).setValue(Number(rows[i][col - 1] || 0) + 1);
+          // 1인 1회: correctUids(14열)·wrongUids(15열)에 uid가 이미 있으면 거부
+          var uid = String(body.uid || "");
+          var correctUids = String(rows[i][13] || "");
+          var wrongUids = String(rows[i][14] || "");
+          var voted = (correctUids + "," + wrongUids).split(",").indexOf(uid) !== -1;
+          if (!uid || voted) {
+            return json_({ ok: false, error: "ALREADY_VOTED" });
+          }
+          // 1-based 컬럼: correctCount=12, wrongCount=13, correctUids=14, wrongUids=15
+          var isWrong = body.result === "wrong";
+          var countCol = isWrong ? 13 : 12;
+          var uidCol = isWrong ? 15 : 14;
+          var uidList = isWrong ? wrongUids : correctUids;
+          sh.getRange(i + 1, countCol).setValue(Number(rows[i][countCol - 1] || 0) + 1);
+          sh.getRange(i + 1, uidCol).setValue(uidList ? uidList + "," + uid : uid);
           return json_({ ok: true });
         }
       }

@@ -89,13 +89,13 @@ export async function createCustomTokenSafe(
     url: `https://iam.googleapis.com/v1/projects/-/serviceAccounts/${serviceAccountEmail}:signBlob`,
     method: "POST",
     data: {
-      payload: Buffer.from(unsignedToken).toString("base64"),
+      bytesToSign: Buffer.from(unsignedToken).toString("base64"),
     },
   });
 
-  const signedBlob = (response.data as { signedBlob: string }).signedBlob;
+  const signature = (response.data as { signature: string }).signature;
   // base64 → base64url
-  const sig = signedBlob.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  const sig = signature.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
 
   return `${unsignedToken}.${sig}`;
 }

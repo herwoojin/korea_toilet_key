@@ -54,7 +54,7 @@ export default function ToiletCard({ building, gender }: Props) {
                   {t("disputed")}
                 </p>
               ) : (
-                <RevealButton buildingId={building.id} gender={gender} />
+                <RevealButton building={building} gender={gender} />
               ))}
           </>
         )}

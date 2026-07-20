@@ -16,37 +16,25 @@ import LoginSheet from "@/components/common/LoginSheet";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { MOCK_SECRETS } from "@/lib/mock/buildings";
 import { getLocalSecret } from "@/lib/mock/localPins";
-import type { Gender } from "@/types/building";
+import type { Building, Gender } from "@/types/building";
 import FeedbackButtons from "./FeedbackButtons";
 
 interface Props {
-  buildingId: string;
+  building: Building;
   gender: Gender;
 }
 
 interface Revealed {
   password: string;
-  viewLogId: string | null;
   demo: boolean;
-}
-
-function getGps(): Promise<{ lat: number; lng: number } | null> {
-  return new Promise((resolve) => {
-    if (!("geolocation" in navigator)) return resolve(null);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-      () => resolve(null),
-      { timeout: 4000 }
-    );
-  });
 }
 
 /**
  * ★ 비밀번호 열람 버튼 (T-204)
- * 가림 → 탭 → (로그인/서약 확인) → "열람 기록이 남습니다" 컨펌 → /api/reveal → 표시
- * 비밀번호는 절대 클라이언트가 Firestore에서 직접 읽지 않는다.
+ * 가림 → 탭 → (로그인/서약 확인) → "열람 기록이 남습니다" 컨펌 → 표시
+ * 구글시트 저장소 모드 — 비번은 핀 목록 데이터(building.passwords)에 포함되어 있다.
  */
-export default function RevealButton({ buildingId, gender }: Props) {
+export default function RevealButton({ building, gender }: Props) {
   const t = useTranslations("reveal");
   const { user, profile, configured } = useAuth();
 
@@ -75,45 +63,25 @@ export default function RevealButton({ buildingId, gender }: Props) {
     setConfirmOpen(true);
   }
 
-  async function reveal() {
+  function reveal() {
     setBusy(true);
     setError(null);
     try {
       if (!configured) {
-        const demo = MOCK_SECRETS[buildingId]?.[gender] ?? getLocalSecret(buildingId, gender);
-        setRevealed({ password: demo ?? "1234*", viewLogId: null, demo: true });
+        const demo =
+          MOCK_SECRETS[building.id]?.[gender] ?? getLocalSecret(building.id, gender);
+        setRevealed({ password: demo ?? "1234*", demo: true });
         setConfirmOpen(false);
         return;
       }
-      const gps = await getGps();
-      const token = await user!.getIdToken();
-      const res = await fetch("/api/reveal", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ buildingId, gender, lat: gps?.lat, lng: gps?.lng }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        const code = data?.error as string | undefined;
-        if (code === "ETIQUETTE_REQUIRED") {
-          setConfirmOpen(false);
-          setPledgeOpen(true);
-        } else if (code === "NO_CREDIT") {
-          setError(t("noCredit"));
-        } else if (code === "NO_ADMIN") {
-          setError(t("needSetup"));
-        } else {
-          setError(t("error"));
-        }
+      // 구글시트 저장소 — 비번이 핀 데이터에 포함되어 있어 서버 호출 불필요
+      const pw = building.passwords?.[gender];
+      if (!pw) {
+        setError(t("error"));
         return;
       }
-      setRevealed({ password: data.password, viewLogId: data.viewLogId, demo: false });
+      setRevealed({ password: pw, demo: false });
       setConfirmOpen(false);
-    } catch {
-      setError(t("error"));
     } finally {
       setBusy(false);
     }
@@ -130,11 +98,7 @@ export default function RevealButton({ buildingId, gender }: Props) {
             <p className="mt-1 text-xs text-muted-foreground">{t("demo")}</p>
           )}
         </div>
-        <FeedbackButtons
-          buildingId={buildingId}
-          gender={gender}
-          viewLogId={revealed.viewLogId}
-        />
+        <FeedbackButtons buildingId={building.id} demo={revealed.demo} />
       </div>
     );
   }
