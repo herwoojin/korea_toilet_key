@@ -32,7 +32,9 @@
     "searchNoKey": "未设置 Kakao REST API 密钥，无法使用地址搜索。",
     "noResults": "没有搜索结果",
     "detail": "查看详情",
-    "roadview": "街景"
+    "roadview": "街景",
+    "visitorsToday": "今日",
+    "visitorsTotal": "累计"
   },
   "building": {
     "male": "男卫生间",

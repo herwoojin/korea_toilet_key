@@ -32,7 +32,9 @@
     "searchNoKey": "Address search is unavailable because the Kakao REST API key is not set.",
     "noResults": "No results found",
     "detail": "View details",
-    "roadview": "Road View"
+    "roadview": "Road View",
+    "visitorsToday": "Today",
+    "visitorsTotal": "Total"
   },
   "building": {
     "male": "Men's restroom",

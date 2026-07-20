@@ -32,7 +32,9 @@
     "searchNoKey": "카카오 REST API 키가 설정되지 않아 주소 검색을 사용할 수 없습니다.",
     "noResults": "검색 결과가 없습니다",
     "detail": "상세 보기",
-    "roadview": "로드뷰"
+    "roadview": "로드뷰",
+    "visitorsToday": "오늘",
+    "visitorsTotal": "누적"
   },
   "building": {
     "male": "남자 화장실",

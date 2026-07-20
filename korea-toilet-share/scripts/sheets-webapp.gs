@@ -46,8 +46,47 @@ function json_(obj) {
   );
 }
 
-/** 핀 전체 목록 */
-function doGet() {
+/** 방문자 통계 탭 — 없으면 자동 생성. A1=total 라벨, B1=누적, 2행부터 [날짜, 카운트] */
+function getStatsSheet_() {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sh = ss.getSheetByName("stats");
+  if (!sh) {
+    sh = ss.insertSheet("stats");
+    sh.getRange(1, 1, 1, 2).setValues([["total", 0]]);
+  }
+  return sh;
+}
+
+function todayKey_() {
+  return Utilities.formatDate(new Date(), "Asia/Seoul", "yyyy-MM-dd");
+}
+
+/** 오늘/누적 방문자 조회 (increment=true면 +1) */
+function visitStats_(increment) {
+  var sh = getStatsSheet_();
+  var today = todayKey_();
+  var total = Number(sh.getRange(1, 2).getValue() || 0);
+  var rows = sh.getDataRange().getValues();
+  var todayRow = -1;
+  for (var i = 1; i < rows.length; i++) {
+    if (String(rows[i][0]) === today) { todayRow = i + 1; break; }
+  }
+  var todayCount = todayRow > 0 ? Number(rows[todayRow - 1][1] || 0) : 0;
+  if (increment) {
+    total += 1;
+    todayCount += 1;
+    sh.getRange(1, 2).setValue(total);
+    if (todayRow > 0) sh.getRange(todayRow, 2).setValue(todayCount);
+    else sh.appendRow([today, 1]);
+  }
+  return { ok: true, today: todayCount, total: total };
+}
+
+/** 핀 전체 목록 (action=stats면 방문자 통계) */
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === "stats") {
+    return json_(visitStats_(false));
+  }
   var rows = getSheet_().getDataRange().getValues();
   var pins = [];
   for (var i = 1; i < rows.length; i++) {
@@ -80,6 +119,11 @@ function doPost(e) {
         p.nickname || "", p.uid || "", 0, 0, "", "", 0,
       ]);
       return json_({ ok: true, id: id });
+    }
+
+    // 방문자 카운트 +1 (오늘/누적)
+    if (body.action === "visit") {
+      return json_(visitStats_(true));
     }
 
     // 비밀번호 열람(관심) 클릭 — views 16열 증가

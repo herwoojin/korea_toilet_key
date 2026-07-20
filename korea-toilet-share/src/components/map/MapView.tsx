@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import ConfidenceBadge from "@/components/building/ConfidenceBadge";
 import SyncOverlay from "@/components/common/SyncOverlay";
 import PendingPinForm, { type PendingPinFields } from "./PendingPinForm";
+import VisitorBadge from "./VisitorBadge";
 import PinTable from "./PinTable";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { fetchNearbyBuildings, invalidatePinsCache } from "@/lib/buildings";
@@ -373,6 +374,9 @@ export default function MapView() {
           {tPin("list")} ({buildings.length})
         </Button>
       )}
+
+      {/* 우측 하단: 방문자 배지 (오늘/누적) */}
+      <VisitorBadge />
 
       {/* 우측 하단: 내 위치 버튼 (T-102) */}
       <Button

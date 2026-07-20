@@ -87,6 +87,20 @@ async function parseScriptResponse<T>(res: Response, failCode: string): Promise<
   }
 }
 
+/** 방문자 통계 조회 (증가 없음) — 시트 stats 탭 */
+export async function fetchVisitStats(): Promise<{ today: number; total: number }> {
+  const res = await fetch(`${webAppUrl()}?action=stats`, {
+    redirect: "follow",
+    cache: "no-store",
+  });
+  const data = await parseScriptResponse<{ ok?: boolean; today?: number; total?: number }>(
+    res,
+    "SHEETS_READ_FAILED"
+  );
+  if (!data.ok) throw new ApiError(502, "SHEETS_READ_FAILED");
+  return { today: Number(data.today) || 0, total: Number(data.total) || 0 };
+}
+
 /** 시트 전체 핀 조회 */
 export async function fetchSheetPins(): Promise<SheetPin[]> {
   const res = await fetch(webAppUrl(), { redirect: "follow", cache: "no-store" });

@@ -32,7 +32,9 @@
     "searchNoKey": "Kakao REST APIキーが未設定のため、住所検索は利用できません。",
     "noResults": "検索結果がありません",
     "detail": "詳細を見る",
-    "roadview": "ロードビュー"
+    "roadview": "ロードビュー",
+    "visitorsToday": "本日",
+    "visitorsTotal": "累計"
   },
   "building": {
     "male": "男性トイレ",
